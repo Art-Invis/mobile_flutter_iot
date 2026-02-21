@@ -2,8 +2,7 @@ name: dart validation
 
 on:
   pull_request: 
-  push:
-    branches: [ Laba-1 ] 
+  
 
 env:
   FLUTTER_VERSION: '3.41.1'

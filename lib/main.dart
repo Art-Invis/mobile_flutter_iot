@@ -9,9 +9,9 @@ class DexterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const DarkPassengerScreen(),
+      home: DarkPassengerScreen(),
     );
   }
 }
@@ -36,7 +36,7 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
   final List<String> _safeList = ['son', 'donut', 'sister', 'work', 'family'];
 
   void _analyze(String input) {
-    String text = input.trim().toLowerCase();
+    final String text = input.trim().toLowerCase();
 
     if (text.contains('doakes')) {
       _resetAll('SURPRISE, MOTHERF***ER!', Colors.orangeAccent, Icons.warning);
@@ -45,7 +45,7 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
 
     if (text.isEmpty) return;
 
-    List<String> words = text.split(RegExp(r'\s+'));
+    final List<String> words = text.split(RegExp(r'\s+'));
 
     setState(() {
       for (var word in words) {
@@ -67,7 +67,8 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
         _status = 'DARK PASSENGER ACTIVE';
         _icon = Icons.dangerous;
       } else if (_score > 0) {
-        _bgColor = Color.lerp(const Color.fromARGB(255, 30, 40, 50), Colors.redAccent[700], _score / 100)!;
+        _bgColor = Color.lerp(const Color.fromARGB(255, 30, 40, 50), 
+        Colors.redAccent[700], _score / 100)!;
         _status = 'DARK PASSENGER IS CLOSE...';
         _icon = Icons.visibility;
       } else if (_score == 0){
@@ -107,7 +108,7 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.black.withOpacity(0.3),
+        backgroundColor:Colors.black.withValues(alpha: 0.3),
         elevation: 0,
       ),
       extendBodyBehindAppBar: true,
@@ -118,7 +119,7 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
         child: SingleChildScrollView(
           child: Container(
             height: MediaQuery.of(context).size.height,
-            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -133,10 +134,10 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
                 ),
 
                 const SizedBox(height: 20),
-                Icon(
+                const Icon(
                   Icons.local_police,
                   size: 50,
-                  color: const Color.fromARGB(225, 255, 254, 254),
+                  color: Color.fromARGB(225, 255, 254, 254),
                 ),
                 const SizedBox(height: 20),
 
@@ -149,7 +150,7 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
                   style: TextStyle(
                     fontSize: 90,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontFamily: 'monospace',
                   ),
                 ),

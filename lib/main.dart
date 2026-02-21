@@ -33,7 +33,7 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
   final TextEditingController _controller = TextEditingController();
 
   final List<String> _darkList = ['blood', 'knife', 'kill', 'dark', 'body'];
-  final List<String> _safeList = ['son', 'donut', 'sister', 'work', 'family'];
+  final List<String> _safeList = ['son', 'donut', 'sister', 'harry', 'family'];
 
   void _analyze(String input) {
     final String text = input.trim().toLowerCase();

@@ -63,15 +63,18 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
       _score = _score.clamp(0, 100);
 
       if (_score >= 100) {
-        _bgColor = const Color(0xFF700000); 
+        _bgColor = const Color(0xFF700000);
         _status = 'DARK PASSENGER ACTIVE';
         _icon = Icons.dangerous;
       } else if (_score > 0) {
-        _bgColor = Color.lerp(const Color.fromARGB(255, 30, 40, 50), 
-        Colors.redAccent[700], _score / 100)!;
+        _bgColor = Color.lerp(
+          const Color.fromARGB(255, 30, 40, 50),
+          Colors.redAccent[700],
+          _score / 100,
+        )!;
         _status = 'DARK PASSENGER IS CLOSE...';
         _icon = Icons.visibility;
-      } else if (_score == 0){
+      } else if (_score == 0) {
         _bgColor = const Color.fromARGB(255, 76, 178, 212);
         _status = 'NORMAL GUY';
         _icon = Icons.emoji_emotions;
@@ -108,7 +111,7 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor:Colors.black.withValues(alpha: 0.3),
+        backgroundColor: Colors.black.withValues(alpha: 0.3),
         elevation: 0,
       ),
       extendBodyBehindAppBar: true,

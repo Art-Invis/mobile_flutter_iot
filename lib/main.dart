@@ -161,6 +161,38 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
                 Icon(_icon, size: 50, color: Colors.white70),
                 const SizedBox(height: 20),
 
+                Container(
+                  width: 65,
+                  height: 65,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'ВТ',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '24',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          height: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+
                 Text(
                   _status,
                   textAlign: TextAlign.center,

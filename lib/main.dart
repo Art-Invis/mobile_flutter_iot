@@ -192,7 +192,6 @@ class _DarkPassengerScreenState extends State<DarkPassengerScreen> {
                   ),
                 ),
 
-
                 Text(
                   _status,
                   textAlign: TextAlign.center,

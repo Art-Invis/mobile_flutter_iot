@@ -47,8 +47,7 @@ class _ControlScreenState extends State<ControlScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: Column(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, 
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Center(

@@ -4,9 +4,7 @@ class BlurBlob extends StatelessWidget {
   final Color color;
   final double size;
 
-  const BlurBlob({
-    required this.color, required this.size, super.key,
-  });
+  const BlurBlob({required this.color, required this.size, super.key});
 
   @override
   Widget build(BuildContext context) {

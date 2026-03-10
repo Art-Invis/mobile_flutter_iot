@@ -9,7 +9,9 @@ class ProfileOption extends StatelessWidget {
   final void Function(bool)? onChanged;
 
   const ProfileOption({
-    required this.icon, required this.title, super.key,
+    required this.icon,
+    required this.title,
+    super.key,
     this.isSwitch = false,
     this.trailingText,
     this.value = false,

@@ -68,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     expandedHeight: isWide ? 150 : 100,
     pinned: true,
     backgroundColor: Colors.transparent,
-    
+
     flexibleSpace: const FlexibleSpaceBar(
       centerTitle: true,
       title: Text('USER PROFILE', style: TextStyle(letterSpacing: 2)),

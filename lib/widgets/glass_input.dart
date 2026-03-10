@@ -6,7 +6,9 @@ class GlassInput extends StatelessWidget {
   final bool isPassword;
 
   const GlassInput({
-    required this.hintText, required this.icon, super.key,
+    required this.hintText,
+    required this.icon,
+    super.key,
     this.isPassword = false,
   });
 

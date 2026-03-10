@@ -8,7 +8,8 @@ class GlassCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   const GlassCard({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.height,
     this.width,
     this.padding = const EdgeInsets.all(16),
@@ -35,10 +36,10 @@ class GlassCard extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05), 
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1), 
+                color: Colors.white.withValues(alpha: 0.1),
                 width: 1.5,
               ),
             ),

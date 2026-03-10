@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/screens/auth/login_screen.dart';
 import 'package:mobile_flutter_iot/screens/auth/register_screen.dart';
-import 'package:mobile_flutter_iot/screens/main/main_wrapper.dart'; 
+import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
+import 'package:mobile_flutter_iot/screens/main/main_wrapper.dart';
 
 void main() {
   runApp(const SmartWorkspaceApp());
@@ -30,6 +31,7 @@ class SmartWorkspaceApp extends StatelessWidget {
         '/': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/main': (context) => const MainWrapper(),
+        '/details': (context) => const DetailsScreen(),
       },
     );
   }

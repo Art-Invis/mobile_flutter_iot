@@ -63,12 +63,21 @@ class RegisterScreen extends StatelessWidget {
   Widget _buildRegisterForm(BuildContext context) {
     return GlassCard(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const GlassInput(hintText: 'Full Name', icon: Icons.person_outline),
+          const GlassInput(
+            hintText: 'Full Name',
+            icon: Icons.person_outline_rounded,
+          ),
           const SizedBox(height: 16),
           const GlassInput(
             hintText: 'Email Address',
-            icon: Icons.alternate_email,
+            icon: Icons.alternate_email_rounded,
+          ),
+          const SizedBox(height: 16),
+          const GlassInput(
+            hintText: 'Department (e.g., KSA, IoT)',
+            icon: Icons.business_center_outlined,
           ),
           const SizedBox(height: 16),
           const GlassInput(
@@ -81,11 +90,16 @@ class RegisterScreen extends StatelessWidget {
             text: 'CREATE ACCESS KEY',
             onPressed: () => Navigator.pop(context),
           ),
+          const SizedBox(height: 12),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'RETURN TO ENTRANCE',
-              style: TextStyle(color: Colors.white38),
+              style: TextStyle(
+                color: Colors.white38,
+                fontSize: 11,
+                letterSpacing: 1,
+              ),
             ),
           ),
         ],

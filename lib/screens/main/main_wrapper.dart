@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/main.dart';
 import 'package:mobile_flutter_iot/profile/profile_screen.dart';
+import 'package:mobile_flutter_iot/screens/home/dashboard_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/home_screen.dart';
 
 class MainWrapper extends StatefulWidget {
@@ -14,7 +15,7 @@ class _MainWrapperState extends State<MainWrapper> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const PlaceholderScreen(title: 'Dashboard'),
+    const DashboardScreen(),
     const PlaceholderScreen(title: 'Manual Control'),
     const HomeScreen(),
     const PlaceholderScreen(title: 'Alerts'),

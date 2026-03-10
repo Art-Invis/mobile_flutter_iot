@@ -70,6 +70,7 @@ class DashboardScreen extends StatelessWidget {
                 AppBar(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
+                  centerTitle: true,
                   title: const Text(
                     'DASHBOARD',
                     style: TextStyle(

@@ -36,17 +36,3 @@ class SmartWorkspaceApp extends StatelessWidget {
     );
   }
 }
-
-// Заглушка
-class PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const PlaceholderScreen({required this.title, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title), backgroundColor: Colors.transparent),
-      body: Center(child: Text('$title Module coming soon...')),
-    );
-  }
-}

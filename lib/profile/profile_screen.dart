@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/profile_item.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,119 +16,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final bool isWide = screenWidth > 600;
+    final size = MediaQuery.of(context).size;
+    final isWide = size.width > 600;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           Positioned(
-            top: -screenHeight * 0.1,
-            right: -screenWidth * 0.2,
-            child: _buildBlurBlob(
-              const Color(0xFF38BDF8).withValues(alpha: 0.12),
-              screenWidth * 0.8,
+            top: -size.height * 0.1,
+            right: -size.width * 0.2,
+            child: BlurBlob(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.06),
+              size: size.width * 0.8,
             ),
           ),
           Positioned(
-            bottom: -screenHeight * 0.1,
-            left: -screenWidth * 0.2,
-            child: _buildBlurBlob(
-              const Color(0xFF4ADE80).withValues(alpha: 0.08),
-              screenWidth * 0.9,
+            bottom: -size.height * 0.1,
+            left: -size.width * 0.2,
+            child: BlurBlob(
+              color: const Color(0xFF4ADE80).withValues(alpha: 0.05),
+              size: size.width * 0.9,
             ),
           ),
-
           CustomScrollView(
             slivers: [
-              SliverAppBar(
-                expandedHeight: isWide ? 200 : 120,
-                pinned: true,
-                backgroundColor: Colors.transparent,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Text(
-                    'USER PROFILE',
-                    style: TextStyle(
-                      letterSpacing: 2,
-                      fontSize: isWide ? 24 : 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                  centerTitle: true,
-                ),
-              ),
+              _buildAppBar(isWide),
               SliverPadding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? screenWidth * 0.2 : 24,
+                  horizontal: isWide ? size.width * 0.2 : 24,
                   vertical: 20,
                 ),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    Center(child: _buildAvatar(isWide)),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Artem Dev',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: isWide ? 32 : 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      'System Administrator',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white38),
-                    ),
+                    _buildHeader(isWide),
                     const SizedBox(height: 40),
-
-                    GlassCard(
-                      child: Column(
-                        children: [
-                          _buildProfileOption(
-                            Icons.notifications_active_outlined,
-                            'Push Notifications',
-                            true,
-                            value: _notifications,
-                            onChanged: (val) =>
-                                setState(() => _notifications = val),
-                          ),
-                          const Divider(color: Colors.white10),
-                          _buildProfileOption(
-                            Icons.dark_mode_outlined,
-                            'Dark Mode',
-                            true,
-                            value: _darkMode,
-                            onChanged: (val) => setState(() => _darkMode = val),
-                          ),
-                          const Divider(color: Colors.white10),
-                          _buildProfileOption(
-                            Icons.language_outlined,
-                            'Language',
-                            false,
-                            trailingText: 'EN',
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildSettingsGroup(),
                     const SizedBox(height: 24),
-
-                    GlassCard(
-                      padding: EdgeInsets.zero,
-                      child: ListTile(
-                        onTap: () =>
-                            Navigator.pushReplacementNamed(context, '/'),
-                        leading: const Icon(
-                          Icons.logout,
-                          color: Color(0xFFF87171),
-                        ),
-                        title: const Text(
-                          'Logout',
-                          style: TextStyle(color: Color(0xFFF87171)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 50), // Відступ знизу для зручності
+                    _buildLogoutButton(context),
                   ]),
                 ),
               ),
@@ -137,58 +64,89 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Допоміжний віджет аватара
-  Widget _buildAvatar(bool isWide) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [Color(0xFF38BDF8), Color(0xFF4ADE80)],
+  Widget _buildAppBar(bool isWide) => SliverAppBar(
+    expandedHeight: isWide ? 150 : 100,
+    pinned: true,
+    backgroundColor: Colors.transparent,
+    
+    flexibleSpace: const FlexibleSpaceBar(
+      centerTitle: true,
+      title: Text('USER PROFILE', style: TextStyle(letterSpacing: 2)),
+    ),
+  );
+
+  Widget _buildHeader(bool isWide) => Column(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(4),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [Color(0xFF38BDF8), Color(0xFF4ADE80)],
+          ),
+        ),
+        child: CircleAvatar(
+          radius: isWide ? 80 : 60,
+          backgroundColor: const Color(0xFF1E293B),
+          child: Icon(
+            Icons.person,
+            size: isWide ? 80 : 60,
+            color: Colors.white,
+          ),
         ),
       ),
-      child: CircleAvatar(
-        radius: isWide ? 80 : 60,
-        backgroundColor: const Color(0xFF1E293B),
-        child: Icon(Icons.person, size: isWide ? 80 : 60, color: Colors.white),
+      const SizedBox(height: 16),
+      const Text(
+        'Artem Dev',
+        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
       ),
-    );
-  }
-
-  // Функція для фонових плям
-  Widget _buildBlurBlob(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        boxShadow: [BoxShadow(color: color, blurRadius: 100, spreadRadius: 50)],
+      const Text(
+        'System Administrator',
+        style: TextStyle(color: Colors.white38),
       ),
-    );
-  }
+    ],
+  );
 
-  Widget _buildProfileOption(
-    IconData icon,
-    String title,
-    bool isSwitch, {
-    String? trailingText,
-    bool value = false,
-    void Function(bool)? onChanged,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: const Color(0xFF38BDF8)),
-      title: Text(title),
-      trailing: isSwitch
-          ? Switch(
-              value: value,
-              onChanged: onChanged,
-              activeThumbColor: const Color(0xFF38BDF8),
-            )
-          : Text(
-              trailingText ?? '',
-              style: const TextStyle(color: Colors.white38),
-            ),
-    );
-  }
+  Widget _buildSettingsGroup() => GlassCard(
+    child: Column(
+      children: [
+        ProfileMenuItem(
+          icon: Icons.notifications_none,
+          title: 'Push Notifications',
+          isSwitch: true,
+          value: _notifications,
+          onChanged: (v) => setState(() => _notifications = v),
+        ),
+        const Divider(color: Colors.white10),
+        ProfileMenuItem(
+          icon: Icons.dark_mode_outlined,
+          title: 'Dark Mode',
+          isSwitch: true,
+          value: _darkMode,
+          onChanged: (v) => setState(() => _darkMode = v),
+        ),
+        const Divider(color: Colors.white10),
+        const ProfileMenuItem(
+          icon: Icons.devices_other,
+          title: 'WorkSpace',
+          trailingText: 'Lad-605a',
+        ),
+        const Divider(color: Colors.white10),
+        const ProfileMenuItem(
+          icon: Icons.language,
+          title: 'Language',
+          trailingText: 'EN',
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildLogoutButton(BuildContext context) => GlassCard(
+    padding: EdgeInsets.zero,
+    child: ListTile(
+      onTap: () => Navigator.pushReplacementNamed(context, '/'),
+      leading: const Icon(Icons.logout, color: Color(0xFFF87171)),
+      title: const Text('Logout', style: TextStyle(color: Color(0xFFF87171))),
+    ),
+  );
 }

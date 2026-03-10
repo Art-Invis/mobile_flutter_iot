@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/main.dart';
 import 'package:mobile_flutter_iot/profile/profile_screen.dart';
+import 'package:mobile_flutter_iot/screens/home/alerts_screen.dart';
+import 'package:mobile_flutter_iot/screens/home/control_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/dashboard_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/home_screen.dart';
 
@@ -16,9 +17,9 @@ class _MainWrapperState extends State<MainWrapper> {
 
   final List<Widget> _screens = [
     const DashboardScreen(),
-    const PlaceholderScreen(title: 'Manual Control'),
+    const ControlScreen(),
     const HomeScreen(),
-    const PlaceholderScreen(title: 'Alerts'),
+    const AlertsScreen(),
     const ProfileScreen(),
   ];
 

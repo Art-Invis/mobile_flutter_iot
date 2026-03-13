@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/widgets/blur_blob.dart'; 
+import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/control_title.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/primary_button.dart';
@@ -40,7 +40,7 @@ class _ControlScreenState extends State<ControlScreen> {
         children: [
           BlurBlob(
             alignment: Alignment.bottomCenter,
-            translation: const Offset(0, 0.5), 
+            translation: const Offset(0, 0.5),
             color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
             size: 250,
           ),

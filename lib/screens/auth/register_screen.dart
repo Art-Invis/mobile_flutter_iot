@@ -14,15 +14,15 @@ class RegisterScreen extends StatelessWidget {
         children: [
           const BlurBlob(
             alignment: Alignment.topLeft,
-            translation: Offset(-0.2, -0.3), 
+            translation: Offset(-0.2, -0.3),
             color: Color(0xFF4ADE80),
             size: 280,
           ),
-          
+
           const BlurBlob(
             alignment: Alignment.bottomRight,
-            translation: Offset(0.3, 0.2), 
-            color: Color(0xFF38BDF8), 
+            translation: Offset(0.3, 0.2),
+            color: Color(0xFF38BDF8),
             size: 320,
           ),
 
@@ -49,7 +49,7 @@ class RegisterScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.white30, fontSize: 12),
                     ),
                     const SizedBox(height: 40),
-                    
+
                     _buildRegisterForm(context),
                   ],
                 ),

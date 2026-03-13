@@ -4,7 +4,7 @@ class BlurBlob extends StatelessWidget {
   final Color color;
   final double size;
   final Alignment alignment;
-  final Offset translation; 
+  final Offset translation;
 
   const BlurBlob({
     required this.color,

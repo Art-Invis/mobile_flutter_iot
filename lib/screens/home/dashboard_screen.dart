@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/indicator.dart';
@@ -47,23 +48,6 @@ class DashboardScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          Positioned(
-            top: 50,
-            right: -100,
-            child: _buildBlurBlob(
-              const Color(0xFF38BDF8).withValues(alpha: 0.05),
-              300,
-            ),
-          ),
-          Positioned(
-            bottom: 50,
-            left: -100,
-            child: _buildBlurBlob(
-              const Color(0xFF4ADE80).withValues(alpha: 0.03),
-              350,
-            ),
-          ),
-
           SafeArea(
             child: Column(
               children: [
@@ -131,19 +115,10 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        // ignore: avoid_print
-        onPressed: () => print('Scan...'),
+        onPressed: () => log('Scan for ESP32 devices initiated'),
         backgroundColor: const Color(0xFF38BDF8),
         child: const Icon(Icons.add, color: Colors.white),
       ),
-    );
-  }
-
-  Widget _buildBlurBlob(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }

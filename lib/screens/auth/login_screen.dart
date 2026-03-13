@@ -12,22 +12,19 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned(
-            top: -100,
-            right: -50,
-            child: BlurBlob(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-              size: 250,
-            ),
+          BlurBlob(
+            alignment: Alignment.topRight,
+            translation: const Offset(0.2, -0.3),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+            size: 250,
           ),
-          Positioned(
-            bottom: -50,
-            left: -100,
-            child: BlurBlob(
-              color: const Color(0xFF4ADE80).withValues(alpha: 0.1),
-              size: 300,
-            ),
+          BlurBlob(
+            alignment: Alignment.bottomLeft,
+            translation: const Offset(-0.3, 0.3),
+            color: const Color(0xFF4ADE80).withValues(alpha: 0.1),
+            size: 300,
           ),
+
           SafeArea(
             child: Center(
               child: SingleChildScrollView(

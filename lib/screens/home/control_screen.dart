@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_flutter_iot/widgets/blur_blob.dart'; 
 import 'package:mobile_flutter_iot/widgets/control_title.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/primary_button.dart';
@@ -37,11 +38,13 @@ class _ControlScreenState extends State<ControlScreen> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          Positioned(
-            top: -100,
-            right: 80,
-            child: _buildGlow(const Color(0xFF38BDF8).withValues(alpha: 0.05)),
+          BlurBlob(
+            alignment: Alignment.bottomCenter,
+            translation: const Offset(0, 0.5), 
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+            size: 250,
           ),
+
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -140,10 +143,4 @@ class _ControlScreenState extends State<ControlScreen> {
       ),
     );
   }
-
-  Widget _buildGlow(Color color) => Container(
-    width: 250,
-    height: 250,
-    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-  );
 }

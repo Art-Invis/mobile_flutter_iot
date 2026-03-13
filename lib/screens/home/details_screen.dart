@@ -21,7 +21,13 @@ class DetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as SensorArguments;
+    final Object? rawArgs = ModalRoute.of(context)?.settings.arguments;
+
+    if (rawArgs == null || rawArgs is! SensorArguments) {
+      return const _ErrorDetailsView();
+    }
+
+    final args = rawArgs;
 
     return Scaffold(
       appBar: AppBar(
@@ -106,6 +112,24 @@ class DetailsScreen extends StatelessWidget {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ErrorDetailsView extends StatelessWidget {
+  const _ErrorDetailsView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('ERROR')),
+      body: const Center(
+        child: Text(
+          'Sensor data not found.\nPlease return to Dashboard.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white54),
+        ),
       ),
     );
   }

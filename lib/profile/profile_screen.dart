@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/profile_item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,6 +14,20 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _notifications = true;
   bool _darkMode = true;
+  bool _isAutoLoginEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessionStatus();
+  }
+
+  Future<void> _loadSessionStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isAutoLoginEnabled = prefs.getBool('isLoggedIn') ?? false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,22 +38,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          Positioned(
-            top: -size.height * 0.1,
-            right: -size.width * 0.2,
-            child: BlurBlob(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.06),
-              size: size.width * 0.8,
-            ),
+          BlurBlob(
+            alignment: Alignment.topRight,
+            translation: const Offset(0.3, -0.3),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+            size: size.width * 0.7,
           ),
-          Positioned(
-            bottom: -size.height * 0.1,
-            left: -size.width * 0.2,
-            child: BlurBlob(
-              color: const Color(0xFF4ADE80).withValues(alpha: 0.05),
-              size: size.width * 0.9,
-            ),
+          BlurBlob(
+            alignment: Alignment.bottomLeft,
+            translation: const Offset(-0.3, 0.3),
+            color: const Color(0xFF4ADE80).withValues(alpha: 0.08),
+            size: size.width * 0.8,
           ),
+
           CustomScrollView(
             slivers: [
               _buildAppBar(isWide),
@@ -50,10 +62,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _buildHeader(isWide),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
+
+                    _buildSecurityStatus(),
+
+                    const SizedBox(height: 24),
                     _buildSettingsGroup(),
                     const SizedBox(height: 24),
                     _buildLogoutButton(context),
+                    const SizedBox(height: 40),
                   ]),
                 ),
               ),
@@ -64,14 +81,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildSecurityStatus() => GlassCard(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: Row(
+      children: [
+        Icon(
+          _isAutoLoginEnabled ? Icons.verified_user : Icons.gpp_maybe,
+          color: _isAutoLoginEnabled
+              ? const Color(0xFF4ADE80)
+              : Colors.orangeAccent,
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Session Security',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              _isAutoLoginEnabled
+                  ? 'Auto-login active (Web LocalStorage)'
+                  : 'Session not saved',
+              style: const TextStyle(fontSize: 11, color: Colors.white38),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+
   Widget _buildAppBar(bool isWide) => SliverAppBar(
     expandedHeight: isWide ? 150 : 100,
     pinned: true,
     backgroundColor: Colors.transparent,
-
     flexibleSpace: const FlexibleSpaceBar(
       centerTitle: true,
-      title: Text('USER PROFILE', style: TextStyle(letterSpacing: 2)),
+      title: Text(
+        'USER PROFILE',
+        style: TextStyle(letterSpacing: 2, fontSize: 16),
+      ),
     ),
   );
 
@@ -86,11 +135,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         child: CircleAvatar(
-          radius: isWide ? 80 : 60,
+          radius: isWide ? 70 : 50,
           backgroundColor: const Color(0xFF1E293B),
           child: Icon(
             Icons.person,
-            size: isWide ? 80 : 60,
+            size: isWide ? 70 : 50,
             color: Colors.white,
           ),
         ),
@@ -98,11 +147,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       const SizedBox(height: 16),
       const Text(
         'Artem Dev',
-        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       const Text(
         'System Administrator',
-        style: TextStyle(color: Colors.white38),
+        style: TextStyle(color: Colors.white38, fontSize: 13),
       ),
     ],
   );
@@ -129,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const ProfileMenuItem(
           icon: Icons.devices_other,
           title: 'WorkSpace',
-          trailingText: 'Lad-605a',
+          trailingText: 'Lab-605a',
         ),
         const Divider(color: Colors.white10),
         const ProfileMenuItem(
@@ -144,9 +193,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildLogoutButton(BuildContext context) => GlassCard(
     padding: EdgeInsets.zero,
     child: ListTile(
-      onTap: () => Navigator.pushReplacementNamed(context, '/'),
+      onTap: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', false);
+
+        if (context.mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false,
+          );
+        }
+      },
       leading: const Icon(Icons.logout, color: Color(0xFFF87171)),
-      title: const Text('Logout', style: TextStyle(color: Color(0xFFF87171))),
+      title: const Text(
+        'Logout',
+        style: TextStyle(color: Color(0xFFF87171), fontWeight: FontWeight.bold),
+      ),
+      subtitle: const Text(
+        'Clears local session data',
+        style: TextStyle(fontSize: 10, color: Colors.white24),
+      ),
     ),
   );
 }

@@ -3,6 +3,7 @@ import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/glass_input.dart';
 import 'package:mobile_flutter_iot/widgets/primary_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -88,7 +89,14 @@ class LoginScreen extends StatelessWidget {
           const SizedBox(height: 24),
           PrimaryButton(
             text: 'INITIALIZE LOGIN',
-            onPressed: () => Navigator.pushReplacementNamed(context, '/main'),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
+
+              if (context.mounted) {
+                Navigator.pushReplacementNamed(context, '/main');
+              }
+            },
           ),
           const SizedBox(height: 12),
           TextButton(

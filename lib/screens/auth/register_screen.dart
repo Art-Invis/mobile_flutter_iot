@@ -21,26 +21,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final _userRepository = LocalUserRepository();
 
+  String? _nameError;
+  String? _emailError;
+  String? _deptError;
+  String? _passwordError;
+
   void _handleRegister() async {
+    setState(() {
+      _nameError = null;
+      _emailError = null;
+      _deptError = null;
+      _passwordError = null;
+    });
+
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final dept = _deptController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || dept.isEmpty || password.isEmpty) {
-      _showError('All fields are required');
-      return;
+    bool hasError = false;
+
+    if (name.isEmpty) {
+      setState(() => _nameError = 'Please enter your full name');
+      hasError = true;
     }
 
-    if (!email.contains('@') || !email.contains('.')) {
-      _showError('Please enter a valid email address');
-      return;
+    if (email.isEmpty) {
+      setState(() => _emailError = 'Email address is required');
+      hasError = true;
+    } else if (!email.contains('@') || !email.contains('.')) {
+      setState(() => _emailError = 'Invalid email format (missing @ or .)');
+      hasError = true;
     }
 
-    if (password.length < 6) {
-      _showError('Password must be at least 6 characters');
-      return;
+    if (dept.isEmpty) {
+      setState(() => _deptError = 'Specify your university department');
+      hasError = true;
     }
+
+    if (password.isEmpty) {
+      setState(() => _passwordError = 'Security password is required');
+      hasError = true;
+    } else if (password.length < 6) {
+      setState(() => _passwordError = 'Password must be at least 6 characters');
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     final newUser = UserModel(
       fullName: name,
@@ -53,16 +80,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration Successful! Please login.')),
+        const SnackBar(
+          content: Text('Access Key Created! You can now log in.'),
+          backgroundColor: Color(0xFF4ADE80),
+        ),
       );
       Navigator.pop(context);
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
-    );
   }
 
   @override
@@ -94,6 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
@@ -101,14 +126,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _buildTopIcon(),
                     const SizedBox(height: 30),
                     const Text(
-                      'CREATE ACCOUNT',
+                      'CREATE ACCESS KEY',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Register in the IoT System',
+                      style: TextStyle(color: Colors.white38, fontSize: 13),
                     ),
                     const SizedBox(height: 40),
                     _buildForm(),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -125,13 +157,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: const Color(0xFF4ADE80).withValues(alpha: 0.03),
+          color: const Color(0xFF4ADE80).withValues(alpha: 0.1),
           width: 2,
         ),
       ),
       child: const Icon(
         Icons.app_registration_rounded,
-        size: 60,
+        size: 50,
         color: Color(0xFF4ADE80),
       ),
     );
@@ -145,34 +177,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
             hintText: 'Full Name',
             icon: Icons.person_outline,
             controller: _nameController,
+            errorText: _nameError,
           ),
           const SizedBox(height: 16),
           GlassInput(
             hintText: 'Email Address',
             icon: Icons.alternate_email,
             controller: _emailController,
+            errorText: _emailError,
           ),
           const SizedBox(height: 16),
           GlassInput(
             hintText: 'Department (e.g., KSA, IoT)',
-            icon: Icons.business_center,
+            icon: Icons.business_center_outlined,
             controller: _deptController,
+            errorText: _deptError,
           ),
           const SizedBox(height: 16),
           GlassInput(
             hintText: 'Access Password',
-            icon: Icons.lock_open,
+            icon: Icons.lock_open_rounded,
             isPassword: true,
             controller: _passwordController,
+            errorText: _passwordError,
           ),
-          const SizedBox(height: 24),
-          PrimaryButton(text: 'CREATE ACCESS KEY', onPressed: _handleRegister),
-          const SizedBox(height: 12),
+          const SizedBox(height: 32),
+          PrimaryButton(text: 'INITIALIZE ACCOUNT', onPressed: _handleRegister),
+          const SizedBox(height: 16),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              'RETURN TO ENTRANCE',
-              style: TextStyle(color: Colors.white38, fontSize: 11),
+              'ALREADY HAVE A KEY? RETURN',
+              style: TextStyle(
+                color: Colors.white24,
+                fontSize: 10,
+                letterSpacing: 1,
+              ),
             ),
           ),
         ],

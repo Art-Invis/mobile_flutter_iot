@@ -198,6 +198,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             if (result is Map && result.containsKey('deleteId')) {
               _onDeleteDevice(index);
+            } else {
+              _loadDevices();
             }
           },
           onLongPress: () => _onEditDevice(device, index),

@@ -107,8 +107,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _devices.isEmpty
-                      ? _buildEmptyState()
-                      : _buildDeviceList(),
+                  ? _buildEmptyState()
+                  : _buildDeviceList(),
             ),
           ],
         ),

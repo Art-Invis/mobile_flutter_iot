@@ -50,7 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         content: const Text(
-          'This will permanently erase your encryption keys, saved devices, and local profile. Continue?',
+          'This will permanently erase your encryption keys, '
+          'saved devices, and local profile. Continue?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [

@@ -28,6 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadDevices() async {
     final savedDevices = await _repository.getDevices();
+    if (!mounted) return;
     setState(() {
       _devices = savedDevices;
       _isLoading = false;
@@ -44,6 +45,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       MaterialPageRoute(builder: (context) => const AddDeviceScreen()),
     );
 
+    if (!mounted) return;
+
     if (result != null) {
       setState(() => _devices.add(result));
       await _syncData();
@@ -55,6 +58,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context,
       MaterialPageRoute(builder: (context) => AddDeviceScreen(device: device)),
     );
+
+    if (!mounted) return;
 
     if (result != null) {
       setState(() => _devices[index] = result);
@@ -77,7 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () async {
               setState(() => _devices.removeAt(index));
               await _syncData();
-              if (mounted) Navigator.pop(context);
+              if (context.mounted) Navigator.pop(context);
             },
             child: const Text(
               'DELETE',
@@ -102,8 +107,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _devices.isEmpty
-                  ? _buildEmptyState()
-                  : _buildDeviceList(),
+                      ? _buildEmptyState()
+                      : _buildDeviceList(),
             ),
           ],
         ),
@@ -171,6 +176,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (index >= _devices.length) return const SizedBox.shrink();
 
         final device = _devices[index];
+        final String deviceId = device.id.length > 8
+            ? device.id.substring(0, 8)
+            : device.id;
+
         return GestureDetector(
           onTap: () async {
             final result = await Navigator.pushNamed(
@@ -185,6 +194,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             );
 
+            if (!mounted) return;
+
             if (result is Map && result.containsKey('deleteId')) {
               _onDeleteDevice(index);
             }
@@ -195,8 +206,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             title: device.title,
             value: device.value,
             status: device.status,
-            subtitle:
-                'ID: ${device.id.length > 8 ? device.id.substring(0, 8) : device.id}',
+            subtitle: 'ID: $deviceId',
             icon: device.icon,
             accentColor: device.color,
           ),

@@ -24,7 +24,7 @@ class DeviceModel {
       'value': value,
       'status': status,
       'icon': icon.codePoint,
-      'color': color.value,
+      'color': color.toARGB32(),
     };
   }
 

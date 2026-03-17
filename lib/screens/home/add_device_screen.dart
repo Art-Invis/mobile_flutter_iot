@@ -100,7 +100,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
             width: 45,
             height: 45,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
                 color: _selectedColor == color ? color : Colors.transparent,

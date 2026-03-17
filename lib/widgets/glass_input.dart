@@ -4,10 +4,12 @@ class GlassInput extends StatelessWidget {
   final String hintText;
   final IconData icon;
   final bool isPassword;
+  final TextEditingController? controller;
 
   const GlassInput({
     required this.hintText,
     required this.icon,
+    this.controller,
     super.key,
     this.isPassword = false,
   });
@@ -21,6 +23,7 @@ class GlassInput extends StatelessWidget {
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(

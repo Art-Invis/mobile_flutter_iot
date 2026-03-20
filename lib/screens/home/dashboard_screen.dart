@@ -1,12 +1,14 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/models/device_model.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/screens/home/add_device_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
-
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/indicator.dart';
 import 'package:mobile_flutter_iot/widgets/workspace_card.dart';
+import 'package:shake/shake.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,11 +21,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final LocalUserRepository _repository = LocalUserRepository();
   List<DeviceModel> _devices = [];
   bool _isLoading = true;
+  late ShakeDetector _shakeDetector;
 
   @override
   void initState() {
     super.initState();
     _loadDevices();
+
+    _shakeDetector = ShakeDetector.autoStart(
+      onPhoneShake: (_) {
+        _handleShake();
+      },
+      shakeThresholdGravity: 1.5,
+    );
+  }
+
+  @override
+  void dispose() {
+    _shakeDetector.stopListening();
+    super.dispose();
+  }
+
+  void _handleShake() {
+    () async {
+      if (!mounted || _devices.isEmpty) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.auto_fix_high, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Text('SHAKE DETECTED: Simulating live data...'),
+            ],
+          ),
+          backgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+
+      final random = Random();
+      for (var device in _devices) {
+        if (device.title.toLowerCase().contains('temp')) {
+          device.value = '${20 + random.nextInt(10)}°C';
+        } else if (device.title.toLowerCase().contains('humidity')) {
+          device.value = '${40 + random.nextInt(20)}%';
+        } else {
+          device.value = '${random.nextInt(100)} units';
+        }
+      }
+
+      await _syncData();
+      _loadDevices();
+    }();
   }
 
   Future<void> _loadDevices() async {
@@ -44,9 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context,
       MaterialPageRoute(builder: (context) => const AddDeviceScreen()),
     );
-
     if (!mounted) return;
-
     if (result != null) {
       setState(() => _devices.add(result));
       await _syncData();
@@ -58,9 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context,
       MaterialPageRoute(builder: (context) => AddDeviceScreen(device: device)),
     );
-
     if (!mounted) return;
-
     if (result != null) {
       setState(() => _devices[index] = result);
       await _syncData();
@@ -174,12 +221,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         if (index >= _devices.length) return const SizedBox.shrink();
-
         final device = _devices[index];
-        final String deviceId = device.id.length > 8
+        final String shortId = device.id.length > 8
             ? device.id.substring(0, 8)
             : device.id;
-
         return GestureDetector(
           onTap: () async {
             final result = await Navigator.pushNamed(
@@ -193,9 +238,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: device.color,
               ),
             );
-
             if (!mounted) return;
-
             if (result is Map && result.containsKey('deleteId')) {
               _onDeleteDevice(index);
             } else {
@@ -208,7 +251,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             title: device.title,
             value: device.value,
             status: device.status,
-            subtitle: 'ID: $deviceId',
+            subtitle: 'ID: $shortId',
             icon: device.icon,
             accentColor: device.color,
           ),

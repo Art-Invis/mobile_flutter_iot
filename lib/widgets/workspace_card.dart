@@ -3,20 +3,24 @@ import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 
 class WorkspaceCard extends StatelessWidget {
+  final String id;
   final String title;
   final String value;
   final String status;
   final String subtitle;
   final IconData icon;
   final Color accentColor;
+  final VoidCallback? onAnalyticsTap;
 
   const WorkspaceCard({
+    required this.id,
     required this.title,
     required this.value,
     required this.status,
     required this.subtitle,
     required this.icon,
     required this.accentColor,
+    this.onAnalyticsTap,
     super.key,
   });
 
@@ -74,18 +78,21 @@ class WorkspaceCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/details',
-                    arguments: SensorArguments(
-                      title: title,
-                      value: value,
-                      icon: icon,
-                      color: accentColor,
-                    ),
-                  );
-                },
+                onTap:
+                    onAnalyticsTap ??
+                    () {
+                      Navigator.pushNamed(
+                        context,
+                        '/details',
+                        arguments: SensorArguments(
+                          id: id,
+                          title: title,
+                          value: value,
+                          icon: icon,
+                          color: accentColor,
+                        ),
+                      );
+                    },
                 child: Text(
                   'ANALYTICS',
                   style: TextStyle(

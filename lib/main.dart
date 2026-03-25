@@ -70,7 +70,7 @@ class _RootHandlerState extends State<RootHandler> {
 
   Future<void> _checkInitialConnectivity() async {
     final isOnline = await ConnectivityService().hasConnection();
-    
+
     if (!mounted) return;
 
     final auth = Provider.of<AuthProvider>(context, listen: false);

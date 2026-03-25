@@ -70,8 +70,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 }
               },
-              child: const Text('LOGOUT',
-                  style: TextStyle(color: Colors.redAccent),),
+              child: const Text(
+                'LOGOUT',
+                style: TextStyle(color: Colors.redAccent),
+              ),
             ),
           ],
         );

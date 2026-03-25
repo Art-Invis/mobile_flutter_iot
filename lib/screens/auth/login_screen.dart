@@ -41,7 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final isValid = await _userRepository.validateCredentials(email, password);
     if (!mounted) return;
 
-
     if (isValid) {
       if (mounted) {
         await context.read<AuthProvider>().login(email, password);

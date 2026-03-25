@@ -75,7 +75,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ],
       ),
     );
-    
+
     if (!mounted) return;
 
     if (newIp != null && newIp.isNotEmpty) {

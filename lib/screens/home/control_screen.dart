@@ -44,7 +44,6 @@ class _ControlScreenState extends State<ControlScreen> {
             color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
             size: 250,
           ),
-
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -64,14 +63,12 @@ class _ControlScreenState extends State<ControlScreen> {
                       ),
                     ),
                     const SizedBox(height: 40),
-
                     const Text(
                       'Lighting System',
                       style: TextStyle(color: Colors.white70),
                     ),
                     const SizedBox(height: 12),
                     _buildLightingCard(),
-
                     const SizedBox(height: 32),
                     const Text(
                       'Climate Control',
@@ -99,7 +96,6 @@ class _ControlScreenState extends State<ControlScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 48),
                     PrimaryButton(
                       text: 'EMERGENCY SHUTDOWN',
@@ -135,9 +131,8 @@ class _ControlScreenState extends State<ControlScreen> {
           Slider(
             value: _brightness,
             activeColor: const Color(0xFF38BDF8),
-            onChanged: _isLightOn
-                ? (v) => setState(() => _brightness = v)
-                : null,
+            onChanged:
+                _isLightOn ? (v) => setState(() => _brightness = v) : null,
           ),
         ],
       ),

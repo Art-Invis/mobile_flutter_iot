@@ -134,9 +134,8 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _selectedIcon == icon
-                    ? _selectedColor
-                    : Colors.transparent,
+                color:
+                    _selectedIcon == icon ? _selectedColor : Colors.transparent,
               ),
             ),
             child: Icon(

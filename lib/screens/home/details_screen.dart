@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/sensor_chart.dart';
+import 'package:provider/provider.dart';
 
 class SensorArguments {
   final String id;
@@ -10,6 +12,7 @@ class SensorArguments {
   final IconData icon;
   final Color color;
   final String status;
+  final String ipAddress;
 
   SensorArguments({
     required this.id,
@@ -18,6 +21,7 @@ class SensorArguments {
     required this.icon,
     required this.color,
     this.status = 'Stable',
+    this.ipAddress = '192.168.1.XXX',
   });
 }
 
@@ -31,22 +35,26 @@ class DetailsScreen extends StatefulWidget {
 class _DetailsScreenState extends State<DetailsScreen> {
   bool _isManualControlOn = true;
   String? _currentValue;
+  String? _customIp;
   final _userRepository = LocalUserRepository();
 
-  Future<void> _editValue(SensorArguments args) async {
-    final controller = TextEditingController(text: _currentValue ?? args.value);
+  Future<void> _editIpAddress(SensorArguments args) async {
+    final mqtt = Provider.of<MqttProvider>(context, listen: false);
+    final controller = TextEditingController(text: _customIp ?? args.ipAddress);
 
-    final newValue = await showDialog<String>(
+    final newIp = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
-        title: Text('Edit ${args.title} Value'),
+        title: const Text('Edit Device IP / Broker'),
         content: TextField(
           controller: controller,
           autofocus: true,
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
-            hintText: 'Enter new value (e.g. 25.5°C)',
+            hintText: 'e.g. 192.168.1.XXX',
+            labelText: 'Target IP Address',
+            labelStyle: TextStyle(color: Colors.white38),
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.white24),
             ),
@@ -60,9 +68,55 @@ class _DetailsScreenState extends State<DetailsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text),
             child: const Text(
-              'Save',
-              style: TextStyle(color: Color(0xFF38BDF8)),
+              'Update & Reconnect',
+              style: TextStyle(color: Color(0xFF4ADE80)),
             ),
+          ),
+        ],
+      ),
+    );
+    
+    if (!mounted) return;
+
+    if (newIp != null && newIp.isNotEmpty) {
+      setState(() => _customIp = newIp);
+
+      mqtt.disconnect();
+      mqtt.initMqtt(newIp, 'flutter_client_reconnect');
+      mqtt.connect();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Reconnecting to $newIp...'),
+          backgroundColor: Colors.blueGrey,
+        ),
+      );
+    }
+  }
+
+  Future<void> _editValue(SensorArguments args) async {
+    final controller = TextEditingController(text: _currentValue ?? args.value);
+    final newValue = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: Text('Edit ${args.title} Value'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration:
+              const InputDecoration(hintText: 'Enter new value (e.g. 25.5°C)'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child:
+                const Text('Save', style: TextStyle(color: Color(0xFF38BDF8))),
           ),
         ],
       ),
@@ -71,13 +125,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
     if (newValue != null && newValue.isNotEmpty) {
       final devices = await _userRepository.getDevices();
       final index = devices.indexWhere((d) => d.id == args.id);
-
       if (index != -1) {
         devices[index].value = newValue;
         await _userRepository.saveDevices(devices);
-        setState(() {
-          _currentValue = newValue;
-        });
+        setState(() => _currentValue = newValue);
       }
     }
   }
@@ -122,6 +173,39 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () => _editIpAddress(args),
+              child: GlassCard(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lan_outlined, color: Colors.white38),
+                    const SizedBox(width: 15),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'DEVICE IP / BROKER',
+                          style: TextStyle(fontSize: 10, color: Colors.white38),
+                        ),
+                        Text(
+                          _customIp ?? args.ipAddress,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    const Icon(
+                      Icons.edit_note,
+                      color: Color(0xFF38BDF8),
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -160,12 +244,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
                 trailing: Switch(
                   value: _isManualControlOn,
-                  activeThumbColor: args.color.withValues(alpha: 0.3),
-                  onChanged: (v) {
-                    setState(() {
-                      _isManualControlOn = v;
-                    });
-                  },
+                  onChanged: (v) => setState(() => _isManualControlOn = v),
                 ),
               ),
             ),

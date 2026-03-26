@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/models/user_model.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
+import 'package:mobile_flutter_iot/services/connectivity_service.dart';
 import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/glass_input.dart';
@@ -18,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _deptController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _connectivity = ConnectivityService();
 
   final _userRepository = LocalUserRepository();
 
@@ -27,6 +29,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _passwordError;
 
   void _handleRegister() async {
+    final bool isOnline = await _connectivity.hasConnection();
+    if (!isOnline) {
+      _showStatusMessage(
+        'No Internet connection to sync account',
+        isError: true,
+      );
+      return;
+    }
+
     setState(() {
       _nameError = null;
       _emailError = null;
@@ -45,7 +56,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() => _nameError = 'Please enter your full name');
       hasError = true;
     }
-
     if (email.isEmpty) {
       setState(() => _emailError = 'Email address is required');
       hasError = true;
@@ -53,12 +63,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() => _emailError = 'Invalid email format (missing @ or .)');
       hasError = true;
     }
-
     if (dept.isEmpty) {
-      setState(() => _deptError = 'Specify your university department');
+      setState(() => _deptError = 'Specify your department');
       hasError = true;
     }
-
     if (password.isEmpty) {
       setState(() => _passwordError = 'Security password is required');
       hasError = true;
@@ -79,14 +87,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     await _userRepository.saveUser(newUser);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Access Key Created! You can now log in.'),
-          backgroundColor: Color(0xFF4ADE80),
-        ),
-      );
+      _showStatusMessage('Access Key Created! You can now log in.');
       Navigator.pop(context);
     }
+  }
+
+  void _showStatusMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.redAccent : const Color(0xFF4ADE80),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override

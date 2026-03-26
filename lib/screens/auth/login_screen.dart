@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_flutter_iot/providers/auth_provider.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
+import 'package:mobile_flutter_iot/services/connectivity_service.dart';
 import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/glass_input.dart';
 import 'package:mobile_flutter_iot/widgets/primary_button.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +18,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  final _connectivity = ConnectivityService();
   final _userRepository = LocalUserRepository();
 
   void _handleLogin() async {
@@ -28,13 +30,22 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    final bool isOnline = await _connectivity.hasConnection();
+    if (!mounted) return;
+
+    if (!isOnline) {
+      _showStatusMessage('No Internet! Access denied.', isError: true);
+      return;
+    }
+
     final isValid = await _userRepository.validateCredentials(email, password);
+    if (!mounted) return;
 
     if (isValid) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-
       if (mounted) {
+        await context.read<AuthProvider>().login(email, password);
+        if (!mounted) return;
+
         _showStatusMessage('Access Granted. Welcome back!');
         Navigator.pushReplacementNamed(context, '/main');
       }
@@ -49,8 +60,9 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.redAccent : Colors.green,
+        backgroundColor: isError ? Colors.redAccent : const Color(0xFF4ADE80),
         duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -96,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const Text(
-                      'ELEVATOR MONITOR v1.0',
+                      'IOT NODE TERMINAL v2.0',
                       style: TextStyle(color: Colors.white30, fontSize: 12),
                     ),
                     const SizedBox(height: 40),

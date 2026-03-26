@@ -1,8 +1,12 @@
-// Віджет пульсуючого індикатора для Header
 import 'package:flutter/material.dart';
 
 class SystemPulseIndicator extends StatefulWidget {
-  const SystemPulseIndicator({super.key});
+  final Color color;
+
+  const SystemPulseIndicator({
+    required this.color,
+    super.key,
+  });
 
   @override
   State<SystemPulseIndicator> createState() => _SystemPulseIndicatorState();
@@ -17,7 +21,7 @@ class _SystemPulseIndicatorState extends State<SystemPulseIndicator>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
   }
 
@@ -34,10 +38,16 @@ class _SystemPulseIndicatorState extends State<SystemPulseIndicator>
       child: Container(
         width: 10,
         height: 10,
-        decoration: const BoxDecoration(
-          color: Color(0xFF4ADE80),
+        decoration: BoxDecoration(
+          color: widget.color,
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Color(0xFF4ADE80), blurRadius: 8)],
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.6),
+              blurRadius: 8,
+              spreadRadius: 2,
+            ),
+          ],
         ),
       ),
     );

@@ -39,7 +39,6 @@ class AlertsScreen extends StatelessWidget {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -64,7 +63,6 @@ class AlertsScreen extends StatelessWidget {
             right: 100,
             child: _buildGlow(const Color(0xFF38BDF8).withValues(alpha: 0.05)),
           ),
-
           ListView.separated(
             padding: const EdgeInsets.fromLTRB(20, 120, 20, 20),
             itemCount: alerts.length,

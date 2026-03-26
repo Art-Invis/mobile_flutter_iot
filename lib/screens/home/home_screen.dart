@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/widgets/blur_blob.dart'; // Використання винесеного BlurBlob
+import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/fan_widget.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
-import 'package:mobile_flutter_iot/widgets/tech_node.dart'; // Імпорт нового віджета
+import 'package:mobile_flutter_iot/widgets/tech_node.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,9 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(_isSystemOn ? 'SYSTEM INITIALIZED' : 'SYSTEM SHUTDOWN'),
-        backgroundColor: _isSystemOn
-            ? const Color(0xFF38BDF8)
-            : Colors.redAccent,
+        backgroundColor:
+            _isSystemOn ? const Color(0xFF38BDF8) : Colors.redAccent,
         duration: const Duration(seconds: 1),
       ),
     );
@@ -33,21 +32,17 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          Positioned(
-            top: -50,
-            left: -50,
-            child: BlurBlob(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-              size: 200,
-            ),
+          BlurBlob(
+            alignment: Alignment.topLeft,
+            translation: const Offset(-0.2, -0.3),
+            color: const Color(0xFF4ADE80).withValues(alpha: 0.08),
+            size: 280,
           ),
-          Positioned(
-            bottom: 100,
-            right: -80,
-            child: BlurBlob(
-              color: const Color(0xFF4ADE80).withValues(alpha: 0.05),
-              size: 250,
-            ),
+          BlurBlob(
+            alignment: Alignment.bottomRight,
+            translation: const Offset(0.3, 0.2),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+            size: 320,
           ),
           SafeArea(
             child: Column(

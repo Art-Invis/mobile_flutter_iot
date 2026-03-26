@@ -78,8 +78,7 @@ class WorkspaceCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               GestureDetector(
-                onTap:
-                    onAnalyticsTap ??
+                onTap: onAnalyticsTap ??
                     () {
                       Navigator.pushNamed(
                         context,

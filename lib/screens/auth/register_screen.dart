@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/models/user_model.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
+import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:mobile_flutter_iot/services/connectivity_service.dart';
 import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
@@ -19,17 +20,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _deptController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _connectivity = ConnectivityService();
 
+  final _connectivity = ConnectivityService();
+  final _apiService = ApiService(); // Підключаємо API
   final _userRepository = LocalUserRepository();
 
-  String? _nameError;
-  String? _emailError;
-  String? _deptError;
-  String? _passwordError;
+  String? _nameError, _emailError, _deptError, _passwordError;
+  bool _isLoading = false;
 
   void _handleRegister() async {
     final bool isOnline = await _connectivity.hasConnection();
+
+    if (!mounted) return;
+
     if (!isOnline) {
       _showStatusMessage(
         'No Internet connection to sync account',
@@ -39,43 +42,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     setState(() {
-      _nameError = null;
-      _emailError = null;
-      _deptError = null;
-      _passwordError = null;
+      _nameError = _emailError = _deptError = _passwordError = null;
     });
 
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final dept = _deptController.text.trim();
     final password = _passwordController.text.trim();
-
     bool hasError = false;
 
     if (name.isEmpty) {
-      setState(() => _nameError = 'Please enter your full name');
+      setState(() => _nameError = 'Required');
       hasError = true;
     }
-    if (email.isEmpty) {
-      setState(() => _emailError = 'Email address is required');
-      hasError = true;
-    } else if (!email.contains('@') || !email.contains('.')) {
-      setState(() => _emailError = 'Invalid email format (missing @ or .)');
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _emailError = 'Invalid email');
       hasError = true;
     }
     if (dept.isEmpty) {
-      setState(() => _deptError = 'Specify your department');
+      setState(() => _deptError = 'Required');
       hasError = true;
     }
-    if (password.isEmpty) {
-      setState(() => _passwordError = 'Security password is required');
-      hasError = true;
-    } else if (password.length < 6) {
-      setState(() => _passwordError = 'Password must be at least 6 characters');
+    if (password.length < 6) {
+      setState(() => _passwordError = 'Min 6 chars');
       hasError = true;
     }
 
     if (hasError) return;
+
+    setState(() => _isLoading = true);
 
     final newUser = UserModel(
       fullName: name,
@@ -84,11 +79,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       department: dept,
     );
 
-    await _userRepository.saveUser(newUser);
+    final success = await _apiService.register(newUser);
 
-    if (mounted) {
-      _showStatusMessage('Access Key Created! You can now log in.');
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (success) {
+      await _userRepository.saveUser(newUser);
+
+      if (!mounted) return;
+
+      _showStatusMessage('Access Key Created in Cloud! You can now log in.');
       Navigator.pop(context);
+    } else {
+      _showStatusMessage(
+        'Server error or email already exists.',
+        isError: true,
+      );
     }
   }
 
@@ -201,7 +208,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           const SizedBox(height: 16),
           GlassInput(
-            hintText: 'Department (e.g., KSA, IoT)',
+            hintText: 'Department (e.g., KSA)',
             icon: Icons.business_center_outlined,
             controller: _deptController,
             errorText: _deptError,
@@ -215,7 +222,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             errorText: _passwordError,
           ),
           const SizedBox(height: 32),
-          PrimaryButton(text: 'INITIALIZE ACCOUNT', onPressed: _handleRegister),
+          if (_isLoading)
+            const CircularProgressIndicator(color: Color(0xFF4ADE80))
+          else
+            PrimaryButton(
+              text: 'INITIALIZE ACCOUNT',
+              onPressed: _handleRegister,
+            ),
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => Navigator.pop(context),

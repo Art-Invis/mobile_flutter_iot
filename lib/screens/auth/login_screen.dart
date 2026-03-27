@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/providers/auth_provider.dart';
-import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/services/connectivity_service.dart';
 import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
@@ -19,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _connectivity = ConnectivityService();
-  final _userRepository = LocalUserRepository();
+  bool _isLoading = false;
 
   void _handleLogin() async {
     final email = _emailController.text.trim();
@@ -38,21 +37,21 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final isValid = await _userRepository.validateCredentials(email, password);
+    setState(() => _isLoading = true);
+
+    final isValid = await context.read<AuthProvider>().login(email, password);
     if (!mounted) return;
 
-    if (isValid) {
-      if (mounted) {
-        await context.read<AuthProvider>().login(email, password);
-        if (!mounted) return;
+    setState(() => _isLoading = false);
 
-        _showStatusMessage('Access Granted. Welcome back!');
-        Navigator.pushReplacementNamed(context, '/main');
-      }
+    if (isValid) {
+      _showStatusMessage('Access Granted. Welcome back!');
+      Navigator.pushReplacementNamed(context, '/main');
     } else {
-      if (mounted) {
-        _showStatusMessage('Invalid email or password', isError: true);
-      }
+      _showStatusMessage(
+        'Invalid email or password (API Error)',
+        isError: true,
+      );
     }
   }
 
@@ -154,7 +153,13 @@ class _LoginScreenState extends State<LoginScreen> {
             controller: _passwordController,
           ),
           const SizedBox(height: 24),
-          PrimaryButton(text: 'INITIALIZE LOGIN', onPressed: _handleLogin),
+          if (_isLoading)
+            const CircularProgressIndicator(color: Color(0xFF38BDF8))
+          else
+            PrimaryButton(
+              text: 'INITIALIZE LOGIN',
+              onPressed: _handleLogin,
+            ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: () => Navigator.pushNamed(context, '/register'),

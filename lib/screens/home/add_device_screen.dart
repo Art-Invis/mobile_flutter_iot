@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/models/device_model.dart';
+import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:mobile_flutter_iot/widgets/glass_input.dart';
 import 'package:mobile_flutter_iot/widgets/primary_button.dart';
 
@@ -16,6 +17,9 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   late TextEditingController _titleController;
   late Color _selectedColor;
   late IconData _selectedIcon;
+
+  bool _isLoading = false;
+  final ApiService _apiService = ApiService();
 
   final List<Color> _colors = [
     const Color(0xFF4ADE80),
@@ -40,6 +44,46 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
     _titleController = TextEditingController(text: widget.device?.title ?? '');
     _selectedColor = widget.device?.color ?? _colors[0];
     _selectedIcon = widget.device?.icon ?? _icons[0];
+  }
+
+  Future<void> _handleSave() async {
+    if (_titleController.text.trim().isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    final deviceToSave = DeviceModel(
+      id: widget.device?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      title: _titleController.text.trim(),
+      value: widget.device?.value ?? '0 units',
+      status: widget.device?.status ?? 'INITIALIZING',
+      icon: _selectedIcon,
+      color: _selectedColor,
+    );
+
+    bool success;
+    if (widget.device == null) {
+      success = await _apiService.addDevice(deviceToSave);
+    } else {
+      success = await _apiService.updateDevice(deviceToSave);
+    }
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.pop(context, deviceToSave);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('API Error: Saved to local cache only.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      Navigator.pop(
+        context,
+        deviceToSave,
+      );
+    }
   }
 
   @override
@@ -68,22 +112,15 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
             const SizedBox(height: 12),
             _buildIconPicker(),
             const SizedBox(height: 48),
-            PrimaryButton(
-              text: widget.device == null ? 'CREATE DEVICE' : 'SAVE CHANGES',
-              onPressed: () {
-                if (_titleController.text.isEmpty) return;
-
-                final result = DeviceModel(
-                  id: widget.device?.id ?? DateTime.now().toString(),
-                  title: _titleController.text,
-                  value: widget.device?.value ?? '0 units',
-                  status: widget.device?.status ?? 'INITIALIZING',
-                  icon: _selectedIcon,
-                  color: _selectedColor,
-                );
-                Navigator.pop(context, result);
-              },
-            ),
+            if (_isLoading)
+              const Center(
+                child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+              )
+            else
+              PrimaryButton(
+                text: widget.device == null ? 'CREATE DEVICE' : 'SAVE CHANGES',
+                onPressed: _handleSave,
+              ),
           ],
         ),
       ),

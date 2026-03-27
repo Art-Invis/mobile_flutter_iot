@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
+import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/sensor_chart.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,64 @@ class _DetailsScreenState extends State<DetailsScreen> {
   bool _isManualControlOn = true;
   String? _currentValue;
   String? _customIp;
+
   final _userRepository = LocalUserRepository();
+  final _apiService = ApiService();
+
+  Future<void> _deleteDevice(String deviceId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title:
+            const Text('Delete Sensor?', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'This will permanently remove the device from the cloud.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child:
+                const Text('DELETE', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    final success = await _apiService.deleteDevice(deviceId);
+
+    if (success) {
+      final devices = await _userRepository.getDevices();
+      devices.removeWhere((d) => d.id == deviceId);
+      await _userRepository.saveDevices(devices);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Device deleted from cloud!'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete (Check connection)'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _editIpAddress(SensorArguments args) async {
     final mqtt = Provider.of<MqttProvider>(context, listen: false);
@@ -80,7 +138,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     if (newIp != null && newIp.isNotEmpty) {
       setState(() => _customIp = newIp);
-
       mqtt.disconnect();
       mqtt.initMqtt(newIp, 'flutter_client_reconnect');
       mqtt.connect();
@@ -125,9 +182,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
     if (newValue != null && newValue.isNotEmpty) {
       final devices = await _userRepository.getDevices();
       final index = devices.indexWhere((d) => d.id == args.id);
+
       if (index != -1) {
         devices[index].value = newValue;
+
+        await _apiService.updateDevice(devices[index]);
         await _userRepository.saveDevices(devices);
+
         setState(() => _currentValue = newValue);
       }
     }
@@ -144,14 +205,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text('${args.title.toUpperCase()} ANALYSIS'),
+        title: Text(
+          '${args.title.toUpperCase()} ANALYSIS',
+          style: const TextStyle(fontSize: 16),
+        ),
         actions: [
           IconButton(
             icon: const Icon(
               Icons.delete_sweep_outlined,
               color: Colors.redAccent,
             ),
-            onPressed: () => Navigator.pop(context, {'deleteId': args.id}),
+            onPressed: () => _deleteDevice(args.id),
           ),
         ],
       ),

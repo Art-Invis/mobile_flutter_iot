@@ -38,4 +38,29 @@ class DeviceModel {
       color: Color(map['color'] as int),
     );
   }
+
+  factory DeviceModel.fromJson(Map<String, dynamic> json) {
+    return DeviceModel(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? 'Unknown Node',
+      value: json['value']?.toString() ?? '--',
+      status: json['status']?.toString() ?? 'Stable',
+      icon: IconData(
+        json['icon_code'] as int? ?? Icons.device_hub.codePoint,
+        fontFamily: 'MaterialIcons',
+      ),
+      color: Color(json['color_hex'] as int? ?? 0xFF38BDF8),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'value': value,
+      'status': status,
+      'icon_code': icon.codePoint,
+      'color_hex': color.toARGB32(),
+    };
+  }
 }

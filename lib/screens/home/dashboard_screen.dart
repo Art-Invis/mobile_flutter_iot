@@ -11,6 +11,7 @@ import 'package:mobile_flutter_iot/widgets/api_device_list.dart';
 import 'package:mobile_flutter_iot/widgets/mqtt_section.dart';
 import 'package:provider/provider.dart';
 import 'package:shake/shake.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -55,9 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         } else {
           if (!_isFirstCheck) {
             _showBanner('ONLINE: Connection restored!', Colors.green);
-            setState(
-              () => _listKey++,
-            );
+            setState(() => _listKey++);
           }
           _isFirstCheck = false;
 
@@ -83,7 +82,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _safelyConnectMQTT() async {
     final mqtt = Provider.of<MqttProvider>(context, listen: false);
     if (mqtt.client == null) {
-      mqtt.initMqtt('192.168.1.XXX', 'flutter_client_${Random().nextInt(100)}');
+      // Читаємо збережену IP-адресу
+      final prefs = await SharedPreferences.getInstance();
+      final savedIp = prefs.getString('mqtt_ip') ?? '192.168.1.XXX';
+
+      mqtt.initMqtt(savedIp, 'flutter_client_${Random().nextInt(100)}');
     }
     final connectivity = await Connectivity().checkConnectivity();
     if (!connectivity.contains(ConnectivityResult.none)) {
@@ -132,9 +135,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 ApiDeviceList(
-                  key: ValueKey(
-                    _listKey,
-                  ),
+                  key: ValueKey(_listKey),
                   mqttIp: mqtt.client?.server,
                 ),
                 const SizedBox(height: 80),
@@ -150,9 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             MaterialPageRoute(builder: (context) => const AddDeviceScreen()),
           );
           if (result != null && mounted) {
-            await LocalUserRepository().saveDevices(
-              [result],
-            );
+            await LocalUserRepository().saveDevices([result]);
             setState(() => _listKey++);
           }
         },

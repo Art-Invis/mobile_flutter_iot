@@ -142,5 +142,26 @@ def save_log():
     
     return jsonify(new_log.to_dict()), 201
 
+@app.route('/auth/profile', methods=['PUT'])
+def update_profile():
+    token = request.headers.get('Authorization')
+    user = User.query.filter_by(access_token=token).first()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.json
+    
+    if 'email' in data and data['email'] != user.email:
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({"error": "Email already in use"}), 400
+
+    user.full_name = data.get('fullName', user.full_name)
+    user.email = data.get('email', user.email)
+    user.department = data.get('department', user.department)
+    
+    db.session.commit()
+    return jsonify(user.to_dict()), 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

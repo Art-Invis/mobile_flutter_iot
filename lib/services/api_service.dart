@@ -44,6 +44,23 @@ class ApiService {
     return null;
   }
 
+  Future<bool> updateUserProfile(UserModel user) async {
+    try {
+      final token = await _storage.read(key: 'access_token');
+      if (token == null) return false;
+
+      final response = await _dio.put<dynamic>(
+        '/auth/profile',
+        data: user.toJson(),
+        options: Options(headers: {'Authorization': token}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      log('Update profile error: $e');
+      return false;
+    }
+  }
+
   Future<bool> deleteAccount() async {
     try {
       final token = await _storage.read(key: 'access_token');

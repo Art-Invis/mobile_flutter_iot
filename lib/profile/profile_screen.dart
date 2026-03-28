@@ -160,12 +160,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editProfileField(
     String title,
     String currentValue,
-    void Function(String) onSave,
+    Future<void> Function(String) onSave,
   ) async {
     final controller = TextEditingController(text: currentValue);
+
     return showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title:
             Text('Update $title', style: const TextStyle(color: Colors.white)),
@@ -181,13 +182,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              onSave(controller.text);
-              Navigator.pop(context);
+            onPressed: () async {
+              await onSave(controller.text);
+
+              if (!dialogContext.mounted) return;
+              Navigator.pop(dialogContext);
               _loadUserData();
             },
             child:
@@ -317,7 +320,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 password: _currentUser!.password,
                 department: _currentUser!.department,
               );
-              await _userRepository.saveUser(updated);
+              final success = await _apiService.updateUserProfile(updated);
+              if (success) {
+                await _userRepository.saveUser(updated);
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to sync with cloud'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
             }
           }),
           child: Text(
@@ -347,7 +360,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 password: _currentUser!.password,
                 department: _currentUser!.department,
               );
-              await _userRepository.saveUser(updated);
+              final success = await _apiService.updateUserProfile(updated);
+              if (success) {
+                await _userRepository.saveUser(updated);
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Email might be taken or offline'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
             }
           }),
           child: Container(
@@ -430,7 +453,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     password: _currentUser!.password,
                     department: val,
                   );
-                  await _userRepository.saveUser(updated);
+                  final success = await _apiService.updateUserProfile(updated);
+                  if (success) {
+                    await _userRepository.saveUser(updated);
+                  } else if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to sync with cloud'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
                 }
               }),
             ),

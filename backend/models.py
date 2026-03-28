@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime 
 import uuid
 
 db = SQLAlchemy()
@@ -36,4 +37,19 @@ class Device(db.Model):
             "status": self.status,
             "icon_code": self.icon_code,
             "color_hex": self.color_hex
+        }
+
+class SensorLog(db.Model):
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    sensor_id = db.Column(db.String(100), nullable=False) 
+    value = db.Column(db.String(50), nullable=False) 
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow) 
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id')) 
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "sensor_id": self.sensor_id,
+            "value": self.value,
+            "timestamp": self.timestamp.isoformat()
         }

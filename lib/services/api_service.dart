@@ -131,4 +131,24 @@ class ApiService {
       return false;
     }
   }
+
+  Future<bool> saveLog(String sensorId, String value) async {
+    try {
+      final token = await _storage.read(key: 'access_token');
+      if (token == null) return false;
+
+      final response = await _dio.post<dynamic>(
+        '/logs',
+        data: {
+          'sensor_id': sensorId,
+          'value': value,
+        },
+        options: Options(headers: {'Authorization': token}),
+      );
+      return response.statusCode == 201;
+    } catch (e) {
+      log('Save log error: $e');
+      return false;
+    }
+  }
 }

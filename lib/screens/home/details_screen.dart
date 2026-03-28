@@ -40,11 +40,39 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   final _userRepository = LocalUserRepository();
   final _apiService = ApiService();
+  bool _isSavingSnapshot = false;
+
+  Future<void> _saveSnapshot(SensorArguments args) async {
+    setState(() => _isSavingSnapshot = true);
+
+    final valueToSave = _currentValue ?? args.value;
+    final success = await _apiService.saveLog(args.id, valueToSave);
+
+    if (!mounted) return;
+
+    setState(() => _isSavingSnapshot = false);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Snapshot saved to cloud database! 📸'),
+          backgroundColor: Color(0xFF4ADE80),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to save snapshot. Check connection.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
 
   Future<void> _deleteDevice(String deviceId) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title:
             const Text('Delete Sensor?', style: TextStyle(color: Colors.white)),
@@ -54,11 +82,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child:
                 const Text('DELETE', style: TextStyle(color: Colors.redAccent)),
           ),
@@ -70,29 +98,29 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     final success = await _apiService.deleteDevice(deviceId);
 
+    if (!mounted) return;
+
     if (success) {
       final devices = await _userRepository.getDevices();
       devices.removeWhere((d) => d.id == deviceId);
       await _userRepository.saveDevices(devices);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Device deleted from cloud!'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-        Navigator.pop(context);
-      }
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Device deleted from cloud!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      Navigator.pop(context);
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to delete (Check connection)'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to delete (Check connection)'),
+          backgroundColor: Colors.orange,
+        ),
+      );
     }
   }
 
@@ -102,7 +130,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     final newIp = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title: const Text('Edit Device IP / Broker'),
         content: TextField(
@@ -120,11 +148,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
             child: const Text(
               'Update & Reconnect',
               style: TextStyle(color: Color(0xFF4ADE80)),
@@ -153,9 +181,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   Future<void> _editValue(SensorArguments args) async {
     final controller = TextEditingController(text: _currentValue ?? args.value);
+
     final newValue = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title: Text('Edit ${args.title} Value'),
         content: TextField(
@@ -167,17 +196,19 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
             child:
                 const Text('Save', style: TextStyle(color: Color(0xFF38BDF8))),
           ),
         ],
       ),
     );
+
+    if (!mounted) return;
 
     if (newValue != null && newValue.isNotEmpty) {
       final devices = await _userRepository.getDevices();
@@ -189,6 +220,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         await _apiService.updateDevice(devices[index]);
         await _userRepository.saveDevices(devices);
 
+        if (!mounted) return;
         setState(() => _currentValue = newValue);
       }
     }
@@ -227,11 +259,36 @@ class _DetailsScreenState extends State<DetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${args.title} History',
-                    style: const TextStyle(color: Colors.white70),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${args.title} History',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      // НОВЕ: Кнопка Snapshot
+                      if (_isSavingSnapshot)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF38BDF8),
+                          ),
+                        )
+                      else
+                        IconButton(
+                          icon: const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Color(0xFF38BDF8),
+                            size: 20,
+                          ),
+                          tooltip: 'Save Snapshot to Database',
+                          onPressed: () => _saveSnapshot(args),
+                        ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   const SensorChart(),
                 ],
               ),

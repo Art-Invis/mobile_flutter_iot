@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from models import db, User, Device
+from models import db, User, Device, SensorLog 
 import secrets
 
 app = Flask(__name__)
@@ -48,10 +48,12 @@ def delete_account():
         return jsonify({"error": "Unauthorized"}), 401
     
     Device.query.filter_by(user_id=user.id).delete()
+    SensorLog.query.filter_by(user_id=user.id).delete()
+    
     db.session.delete(user)
     db.session.commit()
     
-    return jsonify({"message": "Account and all devices deleted"}), 200
+    return jsonify({"message": "Account, devices and logs deleted"}), 200
 
 
 @app.route('/devices', methods=['GET'])
@@ -121,6 +123,24 @@ def delete_device(device_id):
     db.session.commit()
     return jsonify({"message": "Device deleted"}), 200
 
+
+@app.route('/logs', methods=['POST'])
+def save_log():
+    token = request.headers.get('Authorization')
+    user = User.query.filter_by(access_token=token).first()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.json
+    new_log = SensorLog(
+        sensor_id=data.get('sensor_id'),
+        value=str(data.get('value')),
+        user_id=user.id
+    )
+    db.session.add(new_log)
+    db.session.commit()
+    
+    return jsonify(new_log.to_dict()), 201
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-

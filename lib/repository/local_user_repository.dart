@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:mobile_flutter_iot/models/device_model.dart';
 import 'package:mobile_flutter_iot/models/user_model.dart';
 import 'package:mobile_flutter_iot/repository/user_repository.dart';
@@ -21,6 +20,7 @@ class LocalUserRepository implements UserRepository {
     final prefs = await SharedPreferences.getInstance();
     final String? userJson = prefs.getString(_userKey);
     if (userJson == null) return null;
+
     final Map<String, dynamic> userMap =
         jsonDecode(userJson) as Map<String, dynamic>;
     return UserModel.fromJson(userMap);
@@ -35,12 +35,6 @@ class LocalUserRepository implements UserRepository {
   }
 
   @override
-  Future<bool> validateCredentials(String email, String password) async {
-    final user = await getUser();
-    if (user == null) return false;
-    return user.email == email && user.password == password;
-  }
-
   Future<void> saveDevices(List<DeviceModel> devices) async {
     final prefs = await SharedPreferences.getInstance();
     final String devicesJson = jsonEncode(
@@ -49,6 +43,7 @@ class LocalUserRepository implements UserRepository {
     await prefs.setString(_devicesKey, devicesJson);
   }
 
+  @override
   Future<List<DeviceModel>> getDevices() async {
     final prefs = await SharedPreferences.getInstance();
     final String? devicesJson = prefs.getString(_devicesKey);

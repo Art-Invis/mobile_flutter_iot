@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/models/user_model.dart';
 import 'package:mobile_flutter_iot/providers/auth_provider.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
+import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/profile_item.dart';
@@ -20,6 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   UserModel? _currentUser;
   final _userRepository = LocalUserRepository();
+  final _apiService = ApiService();
 
   @override
   void initState() {
@@ -57,9 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () async {
                 final auth = Provider.of<AuthProvider>(context, listen: false);
-
                 Navigator.pop(dialogContext);
-
                 await auth.logout();
 
                 if (mounted) {
@@ -72,7 +72,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               child: const Text(
                 'LOGOUT',
-                style: TextStyle(color: Colors.redAccent),
+                style: TextStyle(
+                  color: Colors.redAccent,
+                ),
               ),
             ),
           ],
@@ -82,6 +84,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _deleteAccount() async {
+    final authProvider = context.read<AuthProvider>();
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -95,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         content: const Text(
-          'This will permanently erase your encryption keys '
+          'This will permanently erase your encryption keys, cloud data, '
           'and local profile. Continue?',
           style: TextStyle(color: Colors.white70),
         ),
@@ -119,16 +123,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirm == true) {
-      await _userRepository.deleteUser();
-      if (mounted) {
-        await context.read<AuthProvider>().logout();
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/login',
-            (route) => false,
-          );
-        }
+      final success = await _apiService.deleteAccount();
+
+      if (!mounted) return;
+
+      if (success) {
+        await _userRepository.deleteUser();
+
+        await authProvider.logout();
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cloud Account Destroyed.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (route) => false,
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete cloud account. Check connection.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
     }
   }
@@ -136,12 +160,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editProfileField(
     String title,
     String currentValue,
-    void Function(String) onSave,
+    Future<void> Function(String) onSave,
   ) async {
     final controller = TextEditingController(text: currentValue);
+
     return showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title:
             Text('Update $title', style: const TextStyle(color: Colors.white)),
@@ -157,13 +182,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              onSave(controller.text);
-              Navigator.pop(context);
+            onPressed: () async {
+              await onSave(controller.text);
+
+              if (!dialogContext.mounted) return;
+              Navigator.pop(dialogContext);
               _loadUserData();
             },
             child:
@@ -293,12 +320,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 password: _currentUser!.password,
                 department: _currentUser!.department,
               );
-              await _userRepository.saveUser(updated);
+              final success = await _apiService.updateUserProfile(updated);
+              if (success) {
+                await _userRepository.saveUser(updated);
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to sync with cloud'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
             }
           }),
           child: Text(
             name,
-            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 4),
@@ -320,7 +360,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 password: _currentUser!.password,
                 department: _currentUser!.department,
               );
-              await _userRepository.saveUser(updated);
+              final success = await _apiService.updateUserProfile(updated);
+              if (success) {
+                await _userRepository.saveUser(updated);
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Email might be taken or offline'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              }
             }
           }),
           child: Container(
@@ -403,7 +453,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     password: _currentUser!.password,
                     department: val,
                   );
-                  await _userRepository.saveUser(updated);
+                  final success = await _apiService.updateUserProfile(updated);
+                  if (success) {
+                    await _userRepository.saveUser(updated);
+                  } else if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to sync with cloud'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
                 }
               }),
             ),

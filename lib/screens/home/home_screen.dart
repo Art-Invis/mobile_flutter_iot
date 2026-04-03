@@ -1,84 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_flutter_iot/cubits/home_cubit.dart';
 import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
 import 'package:mobile_flutter_iot/widgets/fan_widget.dart';
 import 'package:mobile_flutter_iot/widgets/glass_card.dart';
 import 'package:mobile_flutter_iot/widgets/tech_node.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  bool _isSystemOn = true;
-
-  void _toggleSystemPower() {
-    setState(() => _isSystemOn = !_isSystemOn);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isSystemOn ? 'SYSTEM INITIALIZED' : 'SYSTEM SHUTDOWN'),
-        backgroundColor:
-            _isSystemOn ? const Color(0xFF38BDF8) : Colors.redAccent,
-        duration: const Duration(seconds: 1),
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          BlurBlob(
-            alignment: Alignment.topLeft,
-            translation: const Offset(-0.2, -0.3),
-            color: const Color(0xFF4ADE80).withValues(alpha: 0.08),
-            size: 280,
-          ),
-          BlurBlob(
-            alignment: Alignment.bottomRight,
-            translation: const Offset(0.3, 0.2),
-            color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-            size: 320,
-          ),
-          SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                const Text(
-                  'SYSTEM SCHEMATIC',
-                  style: TextStyle(
-                    letterSpacing: 4,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white70,
+    return BlocProvider(
+      create: (context) => HomeCubit(),
+      child: Builder(
+        builder: (context) {
+          return BlocConsumer<HomeCubit, HomeState>(
+            listener: (context, state) {
+              if (state.alertMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.alertMessage!),
+                    backgroundColor: state.isSystemOn
+                        ? const Color(0xFF38BDF8)
+                        : Colors.redAccent,
+                    duration: const Duration(seconds: 1),
                   ),
-                ),
-                Expanded(
-                  child: Center(
-                    child: GlassCard(
-                      width: 320,
-                      height: 500,
-                      child: Stack(
-                        alignment: Alignment.center,
+                );
+              }
+            },
+            builder: (context, state) {
+              return Scaffold(
+                backgroundColor: Colors.transparent,
+                body: Stack(
+                  children: [
+                    BlurBlob(
+                      alignment: Alignment.topLeft,
+                      translation: const Offset(-0.2, -0.3),
+                      color: const Color(0xFF4ADE80).withValues(alpha: 0.08),
+                      size: 280,
+                    ),
+                    BlurBlob(
+                      alignment: Alignment.bottomRight,
+                      translation: const Offset(0.3, 0.2),
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                      size: 320,
+                    ),
+                    SafeArea(
+                      child: Column(
                         children: [
-                          _buildConnectionLine(),
-                          _buildVentilationUnit(),
-                          _buildIlluminationUnit(),
-                          _buildPowerButton(),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'SYSTEM SCHEMATIC',
+                            style: TextStyle(
+                              letterSpacing: 4,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white70,
+                            ),
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: GlassCard(
+                                width: 320,
+                                height: 500,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    _buildConnectionLine(),
+                                    _buildVentilationUnit(state.isSystemOn),
+                                    _buildIlluminationUnit(state.isSystemOn),
+                                    _buildPowerButton(
+                                      context,
+                                      state.isSystemOn,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          _buildStatusText(state.isSystemOn),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                _buildStatusText(),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ],
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -91,49 +101,48 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildVentilationUnit() {
+  Widget _buildVentilationUnit(bool isSystemOn) {
     return Positioned(
       top: 40,
       child: TechNode(
         label: 'VENTILATION UNIT',
-        accentColor: _isSystemOn ? const Color(0xFF38BDF8) : Colors.transparent,
-        child: _isSystemOn
+        accentColor: isSystemOn ? const Color(0xFF38BDF8) : Colors.transparent,
+        child: isSystemOn
             ? const RotatingFan(size: 100)
             : const Icon(Icons.cyclone, size: 100, color: Colors.white10),
       ),
     );
   }
 
-  Widget _buildIlluminationUnit() {
+  Widget _buildIlluminationUnit(bool isSystemOn) {
     return Positioned(
       bottom: 60,
       child: TechNode(
         label: 'ILLUMINATION',
-        accentColor: _isSystemOn ? Colors.yellow : Colors.transparent,
+        accentColor: isSystemOn ? Colors.yellow : Colors.transparent,
         child: Icon(
           Icons.lightbulb,
           size: 70,
-          color: _isSystemOn ? Colors.yellow : Colors.white10,
+          color: isSystemOn ? Colors.yellow : Colors.white10,
         ),
       ),
     );
   }
 
-  Widget _buildPowerButton() {
+  Widget _buildPowerButton(BuildContext context, bool isSystemOn) {
     return Positioned(
       bottom: 20,
       right: 20,
       child: GestureDetector(
-        onTap: _toggleSystemPower,
+        onTap: () => context.read<HomeCubit>().toggleSystemPower(),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: _isSystemOn
-                ? Colors.red.withValues(alpha: 0.1)
-                : Colors.white10,
-            boxShadow: _isSystemOn
+            color:
+                isSystemOn ? Colors.red.withValues(alpha: 0.1) : Colors.white10,
+            boxShadow: isSystemOn
                 ? [
                     BoxShadow(
                       color: Colors.red.withValues(alpha: 0.2),
@@ -144,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Icon(
             Icons.power_settings_new,
-            color: _isSystemOn ? Colors.redAccent : Colors.white38,
+            color: isSystemOn ? Colors.redAccent : Colors.white38,
             size: 28,
           ),
         ),
@@ -152,12 +161,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatusText() {
+  Widget _buildStatusText(bool isSystemOn) {
     return Text(
-      _isSystemOn ? 'LIVE SYSTEM PREVIEW' : 'SYSTEM OFFLINE',
+      isSystemOn ? 'LIVE SYSTEM PREVIEW' : 'SYSTEM OFFLINE',
       style: TextStyle(
         letterSpacing: 2,
-        color: _isSystemOn ? Colors.white24 : Colors.red.withValues(alpha: 0.3),
+        color: isSystemOn ? Colors.white24 : Colors.red.withValues(alpha: 0.3),
         fontSize: 10,
       ),
     );

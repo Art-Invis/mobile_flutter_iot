@@ -90,6 +90,32 @@ class DeviceCubit extends Cubit<DeviceState> {
     }
   }
 
+  Future<void> addOrUpdateDeviceLocally(DeviceModel device) async {
+    List<DeviceModel> currentDevices = [];
+
+    if (state is DeviceLoaded) {
+      currentDevices = List<DeviceModel>.from((state as DeviceLoaded).devices);
+    } else {
+      currentDevices = await localRepo.getDevices();
+    }
+
+    final index = currentDevices.indexWhere((d) => d.id == device.id);
+    if (index >= 0) {
+      currentDevices[index] = device;
+    } else {
+      currentDevices.add(device);
+    }
+
+    await localRepo.saveDevices(currentDevices);
+
+    emit(
+      DeviceLoaded(
+        currentDevices,
+        alertMessage: 'Device cached locally 🛡️',
+      ),
+    );
+  }
+
   @override
   Future<void> close() {
     _connectivitySub?.cancel();

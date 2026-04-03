@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/details_cubit.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart';
 import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
 
 class DetailsDialogs {
@@ -26,8 +26,12 @@ class DetailsDialogs {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child:
-                const Text('DELETE', style: TextStyle(color: Colors.redAccent)),
+            child: const Text(
+              'DELETE',
+              style: TextStyle(
+                color: Colors.redAccent,
+              ),
+            ),
           ),
         ],
       ),
@@ -43,7 +47,7 @@ class DetailsDialogs {
     SensorArguments args,
     String? currentCustomIp,
   ) async {
-    final mqtt = context.read<MqttProvider>();
+    final mqttCubit = context.read<MqttCubit>();
     final controller =
         TextEditingController(text: currentCustomIp ?? args.ipAddress);
 
@@ -82,9 +86,9 @@ class DetailsDialogs {
 
     if (newIp != null && newIp.isNotEmpty && context.mounted) {
       context.read<DetailsCubit>().updateIp(newIp);
-      mqtt.disconnect();
-      mqtt.initMqtt(newIp, 'flutter_client_reconnect');
-      mqtt.connect();
+      mqttCubit.disconnect();
+      mqttCubit.initMqtt(newIp, 'flutter_client_reconnect');
+      mqttCubit.connect();
     }
   }
 

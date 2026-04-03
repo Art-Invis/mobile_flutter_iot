@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart';
 import 'package:mobile_flutter_iot/utils/mqtt_dialogs.dart';
 import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
 
 class MqttControlCard extends StatelessWidget {
-  final MqttProvider mqtt;
+  final MqttState mqttState;
 
-  const MqttControlCard({required this.mqtt, super.key});
+  const MqttControlCard({required this.mqttState, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bool isLocked = mqtt.isTimeRestricted();
+    final mqttCubit = context.read<MqttCubit>();
+    final bool isLocked = mqttCubit.isTimeRestricted();
     final String lockTimeStr =
-        '${mqtt.startLockHour.toString().padLeft(2, '0')}:00 - '
-        '${mqtt.endLockHour.toString().padLeft(2, '0')}:00';
+        '${mqttState.startLockHour.toString().padLeft(2, '0')}:00 - '
+        '${mqttState.endLockHour.toString().padLeft(2, '0')}:00';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -26,7 +28,7 @@ class MqttControlCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isLocked
                   ? Colors.redAccent.withValues(alpha: 0.1)
-                  : mqtt.isLedOn
+                  : mqttState.isLedOn
                       ? Colors.yellow.withValues(alpha: 0.1)
                       : Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
@@ -34,12 +36,12 @@ class MqttControlCard extends StatelessWidget {
             child: Icon(
               isLocked
                   ? Icons.lock_clock
-                  : mqtt.isLedOn
+                  : mqttState.isLedOn
                       ? Icons.lightbulb
                       : Icons.lightbulb_outline,
               color: isLocked
                   ? Colors.redAccent
-                  : mqtt.isLedOn
+                  : mqttState.isLedOn
                       ? Colors.yellow
                       : Colors.white24,
             ),
@@ -55,14 +57,18 @@ class MqttControlCard extends StatelessWidget {
               IconButton(
                 icon:
                     const Icon(Icons.security, size: 16, color: Colors.white38),
-                onPressed: () => MqttDialogs.showSetLockPolicy(context, mqtt),
+                onPressed: () => MqttDialogs.showSetLockPolicy(
+                  context,
+                  mqttCubit,
+                  mqttState,
+                ),
               ),
             ],
           ),
           subtitle: Text(
             isLocked
                 ? 'Restricted hours ($lockTimeStr)'
-                : mqtt.isLedOn
+                : mqttState.isLedOn
                     ? 'Active (ON)'
                     : 'Inactive (OFF)',
             style: TextStyle(
@@ -73,11 +79,11 @@ class MqttControlCard extends StatelessWidget {
             ),
           ),
           trailing: Switch(
-            value: !isLocked && mqtt.isLedOn,
+            value: !isLocked && mqttState.isLedOn,
             activeThumbColor: Colors.yellow,
             onChanged: (bool value) {
               if (isLocked) {
-                mqtt.toggleLed();
+                mqttCubit.toggleLed();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('ACCESS DENIED: System lock policy active'),
@@ -85,7 +91,7 @@ class MqttControlCard extends StatelessWidget {
                   ),
                 );
               } else {
-                mqtt.toggleLed();
+                mqttCubit.toggleLed();
               }
             },
           ),

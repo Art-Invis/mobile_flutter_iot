@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mobile_flutter_iot/cubits/auth_cubit.dart';
 import 'package:mobile_flutter_iot/cubits/device_cubit.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart'; // ОНОВЛЕНО
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/screens/auth/login_screen.dart';
 import 'package:mobile_flutter_iot/screens/auth/register_screen.dart';
@@ -11,7 +11,6 @@ import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
 import 'package:mobile_flutter_iot/screens/main/main_wrapper.dart';
 import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:mobile_flutter_iot/services/connectivity_service.dart';
-import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +29,7 @@ void main() async {
         RepositoryProvider.value(value: localUserRepository),
         RepositoryProvider.value(value: connectivityService),
       ],
-      child: MultiProvider(
+      child: MultiBlocProvider(
         providers: [
           BlocProvider(
             create: (context) => AuthCubit(
@@ -44,7 +43,11 @@ void main() async {
               localRepo: context.read<LocalUserRepository>(),
             ),
           ),
-          ChangeNotifierProvider(create: (_) => MqttProvider()),
+          BlocProvider(
+            create: (context) => MqttCubit(
+              apiService: context.read<ApiService>(),
+            ),
+          ),
         ],
         child: SmartWorkspaceApp(initialRoute: initialRoute),
       ),

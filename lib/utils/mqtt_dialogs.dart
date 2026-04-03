@@ -1,18 +1,19 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MqttDialogs {
   static Future<void> showEditIpAddress(
     BuildContext context,
-    MqttProvider mqtt,
+    MqttCubit mqttCubit,
+    MqttState state,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     if (!context.mounted) return;
 
     final currentIp =
-        mqtt.client?.server ?? prefs.getString('mqtt_ip') ?? '192.168.1.XXX';
+        state.client?.server ?? prefs.getString('mqtt_ip') ?? '192.168.1.XXX';
     final controller = TextEditingController(text: currentIp);
 
     final newIp = await showDialog<String>(
@@ -52,9 +53,9 @@ class MqttDialogs {
       await prefs.setString('mqtt_ip', newIp);
       if (!context.mounted) return;
 
-      mqtt.disconnect();
-      mqtt.initMqtt(newIp, 'flutter_client_${Random().nextInt(100)}');
-      mqtt.connect();
+      mqttCubit.disconnect();
+      mqttCubit.initMqtt(newIp, 'flutter_client_${Random().nextInt(100)}');
+      mqttCubit.connect();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -67,12 +68,13 @@ class MqttDialogs {
 
   static Future<void> showSetLockPolicy(
     BuildContext context,
-    MqttProvider mqtt,
+    MqttCubit mqttCubit,
+    MqttState state,
   ) async {
     final startController =
-        TextEditingController(text: mqtt.startLockHour.toString());
+        TextEditingController(text: state.startLockHour.toString());
     final endController =
-        TextEditingController(text: mqtt.endLockHour.toString());
+        TextEditingController(text: state.endLockHour.toString());
 
     await showDialog<void>(
       context: context,
@@ -86,7 +88,7 @@ class MqttDialogs {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Set hours when LED control is disabled'
+              'Set hours when LED control is disabled.'
               'Actions will be logged to the server.',
               style: TextStyle(color: Colors.white70, fontSize: 12),
             ),
@@ -129,7 +131,7 @@ class MqttDialogs {
             onPressed: () {
               final start = int.tryParse(startController.text) ?? 22;
               final end = int.tryParse(endController.text) ?? 6;
-              mqtt.updateLockHours(start, end);
+              mqttCubit.updateLockHours(start, end);
               Navigator.pop(context);
             },
             child: const Text(

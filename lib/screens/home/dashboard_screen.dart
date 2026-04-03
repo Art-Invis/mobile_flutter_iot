@@ -1,10 +1,9 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/device_cubit.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart';
 import 'package:mobile_flutter_iot/models/device_model.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
 import 'package:mobile_flutter_iot/screens/home/add_device_screen.dart';
 import 'package:mobile_flutter_iot/widgets/devices/api_device_list.dart';
 import 'package:mobile_flutter_iot/widgets/mqtt/mqtt_section.dart';
@@ -14,13 +13,13 @@ class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   Future<void> _safelyConnectMQTT(BuildContext context) async {
-    final mqtt = context.read<MqttProvider>();
-    if (mqtt.client == null) {
+    final mqttCubit = context.read<MqttCubit>();
+    if (mqttCubit.state.client == null) {
       final prefs = await SharedPreferences.getInstance();
       final savedIp = prefs.getString('mqtt_ip') ?? '192.168.1.XXX';
-      mqtt.initMqtt(savedIp, 'flutter_client_${Random().nextInt(100)}');
+      mqttCubit.initMqtt(savedIp, 'flutter_client_${Random().nextInt(100)}');
     }
-    mqtt.connect();
+    mqttCubit.connect();
   }
 
   void _showBanner(BuildContext context, String msg, Color color) {
@@ -37,8 +36,6 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mqtt = context.watch<MqttProvider>();
-
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _safelyConnectMQTT(context));
 
@@ -54,45 +51,49 @@ class DashboardScreen extends StatelessWidget {
             }
           },
           builder: (context, state) {
-            return RefreshIndicator(
-              onRefresh: () => context.read<DeviceCubit>().loadDevices(),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildAppBar(),
-                    MqttSection(mqtt: mqtt),
-                    const Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      child: Text(
-                        'CLOUD & LOCAL NODES',
-                        style: TextStyle(
-                          color: Colors.white30,
-                          fontSize: 11,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ),
-                    if (state is DeviceLoading || state is DeviceInitial)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF38BDF8),
+            return BlocBuilder<MqttCubit, MqttState>(
+              builder: (context, mqttState) {
+                return RefreshIndicator(
+                  onRefresh: () => context.read<DeviceCubit>().loadDevices(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildAppBar(),
+                        MqttSection(mqttState: mqttState),
+                        const Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          child: Text(
+                            'CLOUD & LOCAL NODES',
+                            style: TextStyle(
+                              color: Colors.white30,
+                              fontSize: 11,
+                              letterSpacing: 1.5,
+                            ),
                           ),
                         ),
-                      )
-                    else if (state is DeviceLoaded)
-                      ApiDeviceList(
-                        devices: state.devices,
-                        mqttIp: mqtt.client?.server,
-                      ),
-                    const SizedBox(height: 80),
-                  ],
-                ),
-              ),
+                        if (state is DeviceLoading || state is DeviceInitial)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(40),
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF38BDF8),
+                              ),
+                            ),
+                          )
+                        else if (state is DeviceLoaded)
+                          ApiDeviceList(
+                            devices: state.devices,
+                            mqttIp: mqttState.client?.server,
+                          ),
+                        const SizedBox(height: 80),
+                      ],
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),
@@ -106,7 +107,7 @@ class DashboardScreen extends StatelessWidget {
             ),
           );
           if (result != null && context.mounted) {
-            context.read<DeviceCubit>().loadDevices();
+            context.read<DeviceCubit>().addOrUpdateDeviceLocally(result);
           }
         },
         backgroundColor: const Color(0xFF38BDF8),

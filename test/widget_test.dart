@@ -8,11 +8,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_flutter_iot/cubits/auth_cubit.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart';
 import 'package:mobile_flutter_iot/main.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/services/api_service.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   testWidgets('Auth screens load test', (WidgetTester tester) async {
@@ -25,7 +24,7 @@ void main() {
           RepositoryProvider.value(value: apiService),
           RepositoryProvider.value(value: localUserRepository),
         ],
-        child: MultiProvider(
+        child: MultiBlocProvider(
           providers: [
             BlocProvider(
               create: (context) => AuthCubit(
@@ -33,7 +32,11 @@ void main() {
                 userRepository: context.read<LocalUserRepository>(),
               ),
             ),
-            ChangeNotifierProvider(create: (_) => MqttProvider()),
+            BlocProvider(
+              create: (context) => MqttCubit(
+                apiService: context.read<ApiService>(),
+              ),
+            ),
           ],
           child: const SmartWorkspaceApp(initialRoute: '/login'),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart';
 import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
 import 'package:mobile_flutter_iot/utils/mqtt_dialogs.dart';
 import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
@@ -8,19 +9,19 @@ import 'package:mobile_flutter_iot/widgets/common/workspace_card.dart';
 import 'package:mobile_flutter_iot/widgets/mqtt/mqtt_control_card.dart';
 
 class MqttSection extends StatelessWidget {
-  final MqttProvider mqtt;
-  const MqttSection({required this.mqtt, super.key});
+  final MqttState mqttState;
+  const MqttSection({required this.mqttState, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bool isConnected = mqtt.status == MqttStatus.connected;
+    final bool isConnected = mqttState.status == MqttStatus.connected;
 
     return Column(
       children: [
         _buildStatusCard(context, isConnected),
         if (isConnected) ...[
           _buildMqttLiveNode(context),
-          MqttControlCard(mqtt: mqtt),
+          MqttControlCard(mqttState: mqttState),
         ],
       ],
     );
@@ -56,11 +57,15 @@ class MqttSection extends StatelessWidget {
             ),
             const Spacer(),
             GestureDetector(
-              onTap: () => MqttDialogs.showEditIpAddress(context, mqtt),
+              onTap: () => MqttDialogs.showEditIpAddress(
+                context,
+                context.read<MqttCubit>(),
+                mqttState,
+              ),
               child: Row(
                 children: [
                   Text(
-                    mqtt.client?.server ?? 'No IP',
+                    mqttState.client?.server ?? 'No IP',
                     style: const TextStyle(fontSize: 10, color: Colors.white24),
                   ),
                   const SizedBox(width: 4),
@@ -76,11 +81,11 @@ class MqttSection extends StatelessWidget {
 
   Widget _buildMqttLiveNode(BuildContext context) {
     final double currentAqi =
-        double.tryParse(mqtt.airQuality.toString()) ?? 0.0;
+        double.tryParse(mqttState.airQuality.toString()) ?? 0.0;
     final bool isSensorOffline = currentAqi == 0.0;
 
     final String displayValue =
-        isSensorOffline ? 'No Data' : '${mqtt.airQuality} AQI';
+        isSensorOffline ? 'No Data' : '${mqttState.airQuality} AQI';
     final String displayStatus = isSensorOffline ? 'SENSOR OFFLINE' : 'LIVE';
     final Color displayColor =
         isSensorOffline ? Colors.white24 : const Color(0xFF38BDF8);
@@ -98,7 +103,7 @@ class MqttSection extends StatelessWidget {
             icon: Icons.air_rounded,
             color: displayColor,
             status: displayStatus,
-            ipAddress: mqtt.client?.server ?? '192.168.1.XXX',
+            ipAddress: mqttState.client?.server ?? '192.168.1.XXX',
           ),
         ),
         child: WorkspaceCard(

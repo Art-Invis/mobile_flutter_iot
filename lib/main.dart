@@ -1,32 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/providers/auth_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mobile_flutter_iot/cubits/auth_cubit.dart';
+import 'package:mobile_flutter_iot/cubits/device_cubit.dart';
 import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
+import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/screens/auth/login_screen.dart';
 import 'package:mobile_flutter_iot/screens/auth/register_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
 import 'package:mobile_flutter_iot/screens/main/main_wrapper.dart';
+import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:mobile_flutter_iot/services/connectivity_service.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final authProvider = AuthProvider();
-  await authProvider.checkAuth();
+  final apiService = ApiService();
+  final localUserRepository = LocalUserRepository();
+  final connectivityService = ConnectivityService();
+
+  final token = await const FlutterSecureStorage().read(key: 'access_token');
+  final initialRoute = token != null ? '/main' : '/login';
 
   runApp(
-    MultiProvider(
+    MultiRepositoryProvider(
       providers: [
-        ChangeNotifierProvider.value(value: authProvider),
-        ChangeNotifierProvider(create: (_) => MqttProvider()),
+        RepositoryProvider.value(value: apiService),
+        RepositoryProvider.value(value: localUserRepository),
+        RepositoryProvider.value(value: connectivityService),
       ],
-      child: const SmartWorkspaceApp(),
+      child: MultiProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => AuthCubit(
+              apiService: context.read<ApiService>(),
+              userRepository: context.read<LocalUserRepository>(),
+            )..checkAuth(),
+          ),
+          BlocProvider(
+            create: (context) => DeviceCubit(
+              apiService: context.read<ApiService>(),
+              localRepo: context.read<LocalUserRepository>(),
+            ),
+          ),
+          ChangeNotifierProvider(create: (_) => MqttProvider()),
+        ],
+        child: SmartWorkspaceApp(initialRoute: initialRoute),
+      ),
     ),
   );
 }
 
 class SmartWorkspaceApp extends StatelessWidget {
-  const SmartWorkspaceApp({super.key});
+  final String initialRoute;
+  const SmartWorkspaceApp({required this.initialRoute, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +71,7 @@ class SmartWorkspaceApp extends StatelessWidget {
           error: Color(0xFFF87171),
         ),
       ),
-      home: const RootHandler(),
+      initialRoute: initialRoute,
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
@@ -51,59 +79,5 @@ class SmartWorkspaceApp extends StatelessWidget {
         '/details': (context) => const DetailsScreen(),
       },
     );
-  }
-}
-
-class RootHandler extends StatefulWidget {
-  const RootHandler({super.key});
-
-  @override
-  State<RootHandler> createState() => _RootHandlerState();
-}
-
-class _RootHandlerState extends State<RootHandler> {
-  @override
-  void initState() {
-    super.initState();
-    _checkInitialConnectivity();
-  }
-
-  Future<void> _checkInitialConnectivity() async {
-    final isOnline = await ConnectivityService().hasConnection();
-
-    if (!mounted) return;
-
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-
-    if (!auth.isLoggedIn) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      if (!isOnline) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Offline Mode: Session loaded from cache.'),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('System Online. Syncing data...'),
-            backgroundColor: Color(0xFF4ADE80),
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    return auth.isLoggedIn ? const MainWrapper() : const LoginScreen();
   }
 }

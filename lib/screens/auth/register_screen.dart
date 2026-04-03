@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/auth_cubit.dart';
 import 'package:mobile_flutter_iot/utils/register_form.dart';
-import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
+import 'package:mobile_flutter_iot/widgets/common/blur_blob.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});

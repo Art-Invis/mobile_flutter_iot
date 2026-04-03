@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/control_cubit.dart';
-import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
-import 'package:mobile_flutter_iot/widgets/control_title.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
-import 'package:mobile_flutter_iot/widgets/primary_button.dart';
+import 'package:mobile_flutter_iot/widgets/common/blur_blob.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/primary_button.dart';
+import 'package:mobile_flutter_iot/widgets/devices/control_title.dart';
 
 class ControlScreen extends StatelessWidget {
   const ControlScreen({super.key});

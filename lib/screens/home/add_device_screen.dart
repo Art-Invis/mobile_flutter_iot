@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/add_device_cubit.dart';
 import 'package:mobile_flutter_iot/models/device_model.dart';
 import 'package:mobile_flutter_iot/services/api_service.dart';
-import 'package:mobile_flutter_iot/widgets/color_picker.dart';
-import 'package:mobile_flutter_iot/widgets/glass_input.dart';
-import 'package:mobile_flutter_iot/widgets/icon_picker.dart';
-import 'package:mobile_flutter_iot/widgets/primary_button.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_input.dart';
+import 'package:mobile_flutter_iot/widgets/common/primary_button.dart';
+import 'package:mobile_flutter_iot/widgets/devices/color_picker.dart';
+import 'package:mobile_flutter_iot/widgets/devices/icon_picker.dart';
 
 class AddDeviceScreen extends StatefulWidget {
   final DeviceModel? device;

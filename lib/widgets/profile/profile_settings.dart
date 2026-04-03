@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/profile_cubit.dart';
 import 'package:mobile_flutter_iot/utils/profile_dialogs.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
-import 'package:mobile_flutter_iot/widgets/profile_item.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/profile/profile_item.dart';
 
 class ProfileSettings extends StatelessWidget {
   final ProfileState state;

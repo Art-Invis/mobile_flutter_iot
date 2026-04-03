@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
 import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
 import 'package:mobile_flutter_iot/utils/mqtt_dialogs.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
-import 'package:mobile_flutter_iot/widgets/indicator.dart';
-import 'package:mobile_flutter_iot/widgets/mqtt_control_card.dart';
-import 'package:mobile_flutter_iot/widgets/workspace_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/indicator.dart';
+import 'package:mobile_flutter_iot/widgets/common/workspace_card.dart';
+import 'package:mobile_flutter_iot/widgets/mqtt/mqtt_control_card.dart';
 
 class MqttSection extends StatelessWidget {
   final MqttProvider mqtt;

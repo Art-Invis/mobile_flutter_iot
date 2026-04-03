@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
 
 class MiniStatCard extends StatelessWidget {
   final String label;

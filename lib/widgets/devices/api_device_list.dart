@@ -4,7 +4,7 @@ import 'package:mobile_flutter_iot/cubits/device_cubit.dart';
 import 'package:mobile_flutter_iot/models/device_model.dart';
 import 'package:mobile_flutter_iot/screens/home/add_device_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
-import 'package:mobile_flutter_iot/widgets/workspace_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/workspace_card.dart';
 
 class ApiDeviceList extends StatelessWidget {
   final List<DeviceModel> devices;

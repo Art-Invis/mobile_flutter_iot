@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
 import 'package:mobile_flutter_iot/utils/mqtt_dialogs.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
 
 class MqttControlCard extends StatelessWidget {
   final MqttProvider mqtt;

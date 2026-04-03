@@ -4,9 +4,9 @@ import 'package:mobile_flutter_iot/cubits/details_cubit.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:mobile_flutter_iot/utils/details_dialogs.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
-import 'package:mobile_flutter_iot/widgets/mini_stat_card.dart';
-import 'package:mobile_flutter_iot/widgets/sensor_chart.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/devices/mini_stat_card.dart';
+import 'package:mobile_flutter_iot/widgets/devices/sensor_chart.dart';
 
 class SensorArguments {
   final String id;

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/auth_cubit.dart';
 import 'package:mobile_flutter_iot/models/user_model.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
-import 'package:mobile_flutter_iot/widgets/glass_input.dart';
-import 'package:mobile_flutter_iot/widgets/primary_button.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_input.dart';
+import 'package:mobile_flutter_iot/widgets/common/primary_button.dart';
 
 class RegisterForm extends StatefulWidget {
   final bool isLoading;

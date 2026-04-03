@@ -6,8 +6,8 @@ import 'package:mobile_flutter_iot/cubits/device_cubit.dart';
 import 'package:mobile_flutter_iot/models/device_model.dart';
 import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
 import 'package:mobile_flutter_iot/screens/home/add_device_screen.dart';
-import 'package:mobile_flutter_iot/widgets/api_device_list.dart';
-import 'package:mobile_flutter_iot/widgets/mqtt_section.dart';
+import 'package:mobile_flutter_iot/widgets/devices/api_device_list.dart';
+import 'package:mobile_flutter_iot/widgets/mqtt/mqtt_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatelessWidget {

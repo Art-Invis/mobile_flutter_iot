@@ -4,9 +4,9 @@ import 'package:mobile_flutter_iot/cubits/auth_cubit.dart';
 import 'package:mobile_flutter_iot/cubits/profile_cubit.dart';
 import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/services/api_service.dart';
-import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
-import 'package:mobile_flutter_iot/widgets/profile_header.dart';
-import 'package:mobile_flutter_iot/widgets/profile_settings.dart';
+import 'package:mobile_flutter_iot/widgets/common/blur_blob.dart';
+import 'package:mobile_flutter_iot/widgets/profile/profile_header.dart';
+import 'package:mobile_flutter_iot/widgets/profile/profile_settings.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

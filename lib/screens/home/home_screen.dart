@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_flutter_iot/cubits/home_cubit.dart';
-import 'package:mobile_flutter_iot/widgets/blur_blob.dart';
-import 'package:mobile_flutter_iot/widgets/fan_widget.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
-import 'package:mobile_flutter_iot/widgets/tech_node.dart';
+import 'package:mobile_flutter_iot/widgets/common/blur_blob.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/devices/fan_widget.dart';
+import 'package:mobile_flutter_iot/widgets/devices/tech_node.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

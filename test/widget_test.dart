@@ -5,23 +5,38 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_flutter_iot/cubits/auth_cubit.dart';
 import 'package:mobile_flutter_iot/main.dart';
-import 'package:mobile_flutter_iot/providers/auth_provider.dart';
 import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
+import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
+import 'package:mobile_flutter_iot/services/api_service.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   testWidgets('Auth screens load test', (WidgetTester tester) async {
-    final authProvider = AuthProvider();
+    final apiService = ApiService();
+    final localUserRepository = LocalUserRepository();
 
     await tester.pumpWidget(
-      MultiProvider(
+      MultiRepositoryProvider(
         providers: [
-          ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
-          ChangeNotifierProvider<MqttProvider>(create: (_) => MqttProvider()),
+          RepositoryProvider.value(value: apiService),
+          RepositoryProvider.value(value: localUserRepository),
         ],
-        child: const SmartWorkspaceApp(),
+        child: MultiProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => AuthCubit(
+                apiService: context.read<ApiService>(),
+                userRepository: context.read<LocalUserRepository>(),
+              ),
+            ),
+            ChangeNotifierProvider(create: (_) => MqttProvider()),
+          ],
+          child: const SmartWorkspaceApp(initialRoute: '/login'),
+        ),
       ),
     );
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/widgets/alert_card.dart';
+import 'package:mobile_flutter_iot/widgets/devices/alert_card.dart';
 
 class AlertsScreen extends StatelessWidget {
   const AlertsScreen({super.key});

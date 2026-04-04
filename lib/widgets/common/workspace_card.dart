@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_flutter_iot/screens/home/details_screen.dart';
-import 'package:mobile_flutter_iot/widgets/glass_card.dart';
+import 'package:mobile_flutter_iot/widgets/common/glass_card.dart';
 
 class WorkspaceCard extends StatelessWidget {
   final String id;

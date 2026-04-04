@@ -1,158 +1,113 @@
-import 'dart:async';
 import 'dart:math';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_flutter_iot/cubits/device_cubit.dart';
+import 'package:mobile_flutter_iot/cubits/mqtt_cubit.dart';
 import 'package:mobile_flutter_iot/models/device_model.dart';
-import 'package:mobile_flutter_iot/providers/mqtt_provider.dart';
-import 'package:mobile_flutter_iot/repository/local_user_repository.dart';
 import 'package:mobile_flutter_iot/screens/home/add_device_screen.dart';
-import 'package:mobile_flutter_iot/widgets/api_device_list.dart';
-import 'package:mobile_flutter_iot/widgets/mqtt_section.dart';
-import 'package:provider/provider.dart';
-import 'package:shake/shake.dart';
+import 'package:mobile_flutter_iot/widgets/devices/api_device_list.dart';
+import 'package:mobile_flutter_iot/widgets/mqtt/mqtt_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-  late ShakeDetector _shakeDetector;
-  bool _isFirstCheck = true;
-  int _listKey = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _initConnectivityMonitoring();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _safelyConnectMQTT();
-    });
-
-    _shakeDetector = ShakeDetector.autoStart(
-      onPhoneShake: (_) => _handleShake(),
-      shakeThresholdGravity: 1.5,
-    );
+  Future<void> _safelyConnectMQTT(BuildContext context) async {
+    final mqttCubit = context.read<MqttCubit>();
+    if (mqttCubit.state.client == null) {
+      final prefs = await SharedPreferences.getInstance();
+      final savedIp = prefs.getString('mqtt_ip') ?? '192.168.1.XXX';
+      mqttCubit.initMqtt(savedIp, 'flutter_client_${Random().nextInt(100)}');
+    }
+    mqttCubit.connect();
   }
 
-  void _initConnectivityMonitoring() {
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(
-      (List<ConnectivityResult> results) {
-        if (!mounted) return;
-
-        final bool hasNet = !results.contains(ConnectivityResult.none);
-        final mqtt = Provider.of<MqttProvider>(context, listen: false);
-
-        if (!hasNet) {
-          _isFirstCheck = false;
-          _showBanner('OFFLINE: Check your Wi-Fi connection', Colors.redAccent);
-          mqtt.disconnect();
-        } else {
-          if (!_isFirstCheck) {
-            _showBanner('ONLINE: Connection restored!', Colors.green);
-            setState(() => _listKey++);
-          }
-          _isFirstCheck = false;
-
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) _safelyConnectMQTT();
-          });
-        }
-      },
-    );
-  }
-
-  void _showBanner(String msg, Color color) {
+  void _showBanner(BuildContext context, String msg, Color color) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg, style: const TextStyle(color: Colors.white)),
         backgroundColor: color.withValues(alpha: 0.9),
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  void _safelyConnectMQTT() async {
-    final mqtt = Provider.of<MqttProvider>(context, listen: false);
-    if (mqtt.client == null) {
-      // Читаємо збережену IP-адресу
-      final prefs = await SharedPreferences.getInstance();
-      final savedIp = prefs.getString('mqtt_ip') ?? '192.168.1.XXX';
-
-      mqtt.initMqtt(savedIp, 'flutter_client_${Random().nextInt(100)}');
-    }
-    final connectivity = await Connectivity().checkConnectivity();
-    if (!connectivity.contains(ConnectivityResult.none)) {
-      mqtt.connect();
-    }
-  }
-
-  void _handleShake() {
-    if (!mounted) return;
-    _showBanner('SHAKE: Data refreshed', const Color(0xFF38BDF8));
-    setState(() => _listKey++);
-  }
-
-  @override
-  void dispose() {
-    _shakeDetector.stopListening();
-    _connectivitySubscription?.cancel();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final mqtt = context.watch<MqttProvider>();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _safelyConnectMQTT(context));
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async => setState(() => _listKey++),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildAppBar(),
-                MqttSection(mqtt: mqtt),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Text(
-                    'CLOUD & LOCAL NODES',
-                    style: TextStyle(
-                      color: Colors.white30,
-                      fontSize: 11,
-                      letterSpacing: 1.5,
+        child: BlocConsumer<DeviceCubit, DeviceState>(
+          listener: (context, state) {
+            if (state is DeviceLoaded && state.alertMessage != null) {
+              final color =
+                  state.isError ? Colors.redAccent : const Color(0xFF4ADE80);
+              _showBanner(context, state.alertMessage!, color);
+            }
+          },
+          builder: (context, state) {
+            return BlocBuilder<MqttCubit, MqttState>(
+              builder: (context, mqttState) {
+                return RefreshIndicator(
+                  onRefresh: () => context.read<DeviceCubit>().loadDevices(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildAppBar(),
+                        MqttSection(mqttState: mqttState),
+                        const Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          child: Text(
+                            'CLOUD & LOCAL NODES',
+                            style: TextStyle(
+                              color: Colors.white30,
+                              fontSize: 11,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ),
+                        if (state is DeviceLoading || state is DeviceInitial)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(40),
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF38BDF8),
+                              ),
+                            ),
+                          )
+                        else if (state is DeviceLoaded)
+                          ApiDeviceList(
+                            devices: state.devices,
+                            mqttIp: mqttState.client?.server,
+                          ),
+                        const SizedBox(height: 80),
+                      ],
                     ),
                   ),
-                ),
-                ApiDeviceList(
-                  key: ValueKey(_listKey),
-                  mqttIp: mqtt.client?.server,
-                ),
-                const SizedBox(height: 80),
-              ],
-            ),
-          ),
+                );
+              },
+            );
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push<DeviceModel?>(
             context,
-            MaterialPageRoute(builder: (context) => const AddDeviceScreen()),
+            MaterialPageRoute<DeviceModel?>(
+              builder: (context) => const AddDeviceScreen(),
+            ),
           );
-          if (result != null && mounted) {
-            await LocalUserRepository().saveDevices([result]);
-            setState(() => _listKey++);
+          if (result != null && context.mounted) {
+            context.read<DeviceCubit>().addOrUpdateDeviceLocally(result);
           }
         },
         backgroundColor: const Color(0xFF38BDF8),

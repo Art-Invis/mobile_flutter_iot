@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_iot/profile/profile_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/alerts_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/control_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/dashboard_screen.dart';
 import 'package:mobile_flutter_iot/screens/home/home_screen.dart';
+import 'package:mobile_flutter_iot/screens/profile/profile_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});

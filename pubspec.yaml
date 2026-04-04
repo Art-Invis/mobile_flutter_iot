@@ -46,7 +46,13 @@ dependencies:
   provider: ^6.1.1
 
   dio: ^5.4.1
+  flutter_bloc: ^9.1.1
 
+  iot_flashlight:
+    git:
+      url: https://github.com/Art-Invis/iot_flashlight_plugin.git
+      ref: main
+      
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -177,7 +177,7 @@ class MqttControlCard extends StatelessWidget {
 //                  const Icon(Icons.security, size: 16, color: Colors.white38),
 //                 onPressed: () => MqttDialogs.showSetLockPolicy(
 //                   context,
-//                   mqttBloc, 
+//                   mqttBloc,
 //                   mqttState,
 //                 ),
 //               ),

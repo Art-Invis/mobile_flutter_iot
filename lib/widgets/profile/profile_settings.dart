@@ -227,8 +227,8 @@ class ProfileSettings extends StatelessWidget {
 //                 icon: Icons.notifications_active_outlined,
 //                 title: 'System Alerts',
 //                 isSwitch: true,
-//                 
-//                 value: false, 
+//
+//                 value: false,
 //                 onChanged: (v) => context
 //                     .read<ProfileBloc>()
 //                     .add(ProfileToggleNotifications(v)),
